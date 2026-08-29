@@ -41,6 +41,12 @@ jobs:
           npm run typecheck
           npm run lint
 
+      - name: Sync Firebase Rules & Security
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+        if: env.FIREBASE_SERVICE_ACCOUNT_KEY != ''
+        run: npm run firebase:sync
+
       - name: Build Vite Application
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}

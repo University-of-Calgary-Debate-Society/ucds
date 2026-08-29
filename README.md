@@ -70,6 +70,29 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run typecheck` | Validates TypeScript types across the entire project |
 | `npm run lint` | Lints project using ESLint |
 | `npm run deploy` | Builds and deploys manually to GitHub Pages via `gh-pages` |
+| `npm run firebase:sync` | Deploys & syncs `firestore.rules`, indexes, Auth and App Check to Firebase |
+| `npm run firebase:verify` | Verifies Firebase Admin SDK connectivity for Auth, Firestore, and App Check |
+| `npm run firebase:set-role` | Grants user roles (`admin`, `executive`, `member`) via Auth Custom Claims |
+
+---
+
+## 🔒 Firebase Admin SDK, Security Rules & App Check Synchronization
+
+The project integrates the **Firebase Admin SDK** (`firebase-admin`) with automated synchronization for:
+1. **Firestore Security Rules (`firestore.rules`)**: Role-based access control with granular validation for `users`, `events`, `tournaments`, `applications`, and `announcements`.
+2. **App Check**: Client and Admin SDK support with token verification and enforcement.
+3. **Authentication & Custom Claims (`scripts/setRole.js`)**: Assigning `admin`, `executive`, and `member` roles directly to accounts.
+4. **CI/CD Continuous Sync**: Automatically compiles and deploys security rules upon pushes to `main` using the GitHub Actions secret `FIREBASE_SERVICE_ACCOUNT_KEY`.
+
+### Manual / Local Rule Sync:
+```bash
+npm run firebase:sync
+```
+
+### Assign User Role:
+```bash
+npm run firebase:set-role user@ucalgary.ca admin
+```
 
 ---
 

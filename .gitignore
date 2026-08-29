@@ -31,6 +31,13 @@ dist-ssr
 .env.*.local
 !.env.example
 
+# Service Account Keys & Secrets
+*service-account*.json
+*serviceAccount*.json
+*firebase-admin*.json
+*.pem
+credentials.json
+
 # Cloudflare & Wrangler
 .wrangler/
 .mf/
