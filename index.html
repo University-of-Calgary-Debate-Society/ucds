@@ -2,12 +2,17 @@
 <html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C8102E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m12 19 7-7 3 3-7 7-3-3z'/><path d='m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z'/><path d='m2 2 7.586 7.586'/><circle cx='11' cy='11' r='2'/></svg>" />
+    <link rel="icon" type="image/png" href="/images/seo/logo_normal.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <title>University of Calgary Debate Society (UCDS)</title>
-    <meta name="description" content="Official web platform of the University of Calgary Debate Society - Tournaments, Training, Membership, and Community." />
+    <meta name="description" content="Official web platform of the University of Calgary Debate Society (UCDS). Cultivating critical thought, persuasive discourse, and competitive excellence since 1966." />
     
+    <!-- Google Fonts Preconnect & Stylesheet -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <!-- Theme Flash Prevention (System / LocalStorage Sync) -->
     <script>
       (function() {
@@ -20,6 +25,11 @@
           } else {
             document.documentElement.classList.remove('dark');
             document.querySelector('meta[name="color-scheme"]').content = 'light';
+          }
+          var storedAnim = localStorage.getItem('ucds_animations');
+          var systemReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (storedAnim === 'false' || (storedAnim === null && systemReducedMotion)) {
+            document.documentElement.classList.add('reduce-motion');
           }
         } catch (e) {}
       })();
@@ -39,7 +49,7 @@
       }(window.location))
     </script>
   </head>
-  <body class="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-red-500 selection:text-white">
+  <body class="min-h-screen bg-[#F6F6F6] text-[#1C244C] dark:bg-[#15162C] dark:text-[#F6F6F6] transition-colors duration-300 antialiased selection:bg-[#0075A2] selection:text-white overflow-x-hidden font-sans">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

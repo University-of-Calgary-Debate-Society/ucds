@@ -1,0 +1,177 @@
+/* Header & Settings Modal Styles - src/css/header/header.css */
+
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  background: rgba(246, 246, 246, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(28, 36, 76, 0.1);
+  transition: all 0.3s ease;
+}
+
+.dark .site-header {
+  background: rgba(21, 22, 44, 0.75);
+  border-bottom: 1px solid rgba(83, 175, 208, 0.15);
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 140px;
+}
+
+.header-right {
+  justify-content: flex-end;
+}
+
+.header-center-logo {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.header-logo-img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.15));
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header-center-logo:hover .header-logo-img {
+  transform: scale(1.06);
+}
+
+/* Header Cogwheel Button */
+.btn-cogwheel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(28, 36, 76, 0.06);
+  border: 1px solid rgba(28, 36, 76, 0.12);
+  color: #1C244C;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .btn-cogwheel {
+  background: rgba(83, 175, 208, 0.1);
+  border: 1px solid rgba(83, 175, 208, 0.2);
+  color: #F6F6F6;
+}
+
+.btn-cogwheel:hover {
+  background: rgba(0, 117, 162, 0.15);
+  color: #0075A2;
+  transform: rotate(30deg) scale(1.05);
+}
+
+.dark .btn-cogwheel:hover {
+  background: rgba(83, 175, 208, 0.2);
+  color: #53afd0;
+}
+
+/* Header Auth Button */
+.btn-header-auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.25rem;
+  border-radius: 9999px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-header-login {
+  background: linear-gradient(135deg, #0075A2 0%, #1C244C 100%);
+  color: #F6F6F6;
+  border: 1px solid rgba(83, 175, 208, 0.3);
+  box-shadow: 0 4px 14px -2px rgba(0, 117, 162, 0.35);
+}
+
+.btn-header-login:hover {
+  background: linear-gradient(135deg, #53afd0 0%, #0075A2 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -2px rgba(0, 117, 162, 0.5);
+}
+
+.btn-header-logout {
+  background: rgba(28, 36, 76, 0.08);
+  color: #1C244C;
+  border: 1px solid rgba(28, 36, 76, 0.15);
+}
+
+.dark .btn-header-logout {
+  background: rgba(83, 175, 208, 0.12);
+  color: #F6F6F6;
+  border: 1px solid rgba(83, 175, 208, 0.25);
+}
+
+.btn-header-logout:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Settings Modal Dialog */
+.settings-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: modalBackdropFadeIn 0.25s ease-out;
+}
+
+.settings-modal-card {
+  width: 100%;
+  max-width: 440px;
+  background: #F6F6F6;
+  border: 1px solid rgba(28, 36, 76, 0.15);
+  border-radius: 28px;
+  padding: 2rem;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4);
+  animation: modalPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .settings-modal-card {
+  background: #15162C;
+  border: 1px solid rgba(83, 175, 208, 0.25);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 35px 2px rgba(83, 175, 208, 0.12);
+}
+
+@keyframes modalBackdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalPopIn {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
