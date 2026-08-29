@@ -1,15 +1,19 @@
 import React from 'react';
-import { Settings, LogIn, LogOut } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Settings, LogIn, UserCircle, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
+import { getSeasonalLogoInfo } from '@/utils/seasonalLogo';
 
 export const Header: React.FC = () => {
-  const { user, signInWithGoogle, logout } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const { setIsSettingsOpen } = useAppSettings();
+  const { logoUrl, altText, seasonName } = getSeasonalLogoInfo();
 
   return (
     <header className="site-header">
-      {/* Left: Cog for Settings */}
+      {/* Left: Cogwheel for Settings */}
       <div className="header-left">
         <button
           onClick={() => setIsSettingsOpen(true)}
@@ -21,44 +25,56 @@ export const Header: React.FC = () => {
         </button>
       </div>
 
-      {/* Center: Centred Club Logo (logo_normal) */}
-      <a href="/" className="header-center-logo" aria-label="University of Calgary Debate Society">
+      {/* Center: Centred Seasonal Club Logo */}
+      <Link
+        to="/"
+        className="header-center-logo"
+        aria-label={`University of Calgary Debate Society (${seasonName})`}
+        title={`UCDS - ${seasonName}`}
+      >
         <img
-          src="/images/seo/logo_normal.png"
-          alt="University of Calgary Debate Society Logo"
+          src={logoUrl}
+          alt={altText}
           className="header-logo-img"
           onError={(e) => {
-            // Fallback to /photos/rex.png or public path if not found
-            (e.target as HTMLImageElement).src = '/photos/rex.png';
+            (e.target as HTMLImageElement).src = '/images/seo/logo_normal.png';
           }}
         />
-      </a>
+      </Link>
 
-      {/* Right: Login / Logout Button */}
+      {/* Right: Login Icon / Logout & Portal Buttons (Icon only) */}
       <div className="header-right">
         {user ? (
           <div className="flex items-center gap-2">
-            <span className="hidden sm:inline-flex text-xs font-semibold text-[#1C244C] dark:text-[#F6F6F6] truncate max-w-[120px]">
-              {user.displayName || user.email?.split('@')[0]}
-            </span>
-            <button
-              onClick={() => logout()}
-              className="btn-header-auth btn-header-logout"
-              title="Log out"
+            <Link
+              to="/member/portal"
+              className="btn-cogwheel"
+              title="Member Portal"
+              aria-label="Member Portal"
             >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Logout</span>
+              <UserCircle className="w-5 h-5 text-[#0075A2] dark:text-[#53afd0]" />
+            </Link>
+            <button
+              onClick={async () => {
+                await logout();
+                navigate('/member/login');
+              }}
+              className="btn-cogwheel hover:border-rose-400 hover:text-rose-500 text-slate-500 dark:text-slate-400"
+              title="Sign Out"
+              aria-label="Sign Out"
+            >
+              <LogOut className="w-5 h-5" />
             </button>
           </div>
         ) : (
-          <button
-            onClick={() => signInWithGoogle()}
-            className="btn-header-auth btn-header-login"
-            title="Sign in with Google"
+          <Link
+            to="/member/login"
+            className="btn-cogwheel"
+            title="Sign In"
+            aria-label="Sign In"
           >
-            <LogIn className="w-4 h-4" />
-            <span>Login</span>
-          </button>
+            <LogIn className="w-5 h-5 text-[#0075A2] dark:text-[#53afd0]" />
+          </Link>
         )}
       </div>
     </header>

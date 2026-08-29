@@ -9,7 +9,7 @@ COLORS:
 The main colors for the pages should be #1C244C (matching colors with the logo), #0075A2 for a lighter blue, #53afd0 for an even lighter blue, white should be #F6F6F6. Dark blue should be #15162C. The website should be relatively monochromatic unless otherwise stated.
 
 DARK AND LIGHT MODE:
-Both modes should be available on every page of the website. Make sure that this is enforced unless otherwise stated. The website should follow the user's system or browser selection of dark or light mode unless they specifically toggle.
+Both modes should be available on every page of the website. Make sure that this is enforced unless otherwise stated. The website should follow the user's system or browser selection of dark or light mode unless they specifically toggle. Make sure to reference previously created pages and functions to see how the css is designed for light and dark modes to cut down on unnecessary amounts of styles.
 
 FONTS:
 User different fonts for titles and body text, but make sure that the same fonts are used across the website unless explicitly stated.

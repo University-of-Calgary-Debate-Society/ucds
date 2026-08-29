@@ -1,7 +1,10 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
 @import "./header/header.css";
 @import "./navigation/navbar.css";
 @import "./home/home.css";
+@import "./member/member.css";
 
 @layer base {
   :root {
@@ -86,18 +89,58 @@ h1, h2, h3, .font-title {
   border: 1px solid var(--border-subtle);
 }
 
-/* Global button micro-interactions */
-.btn-hover-effect {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+/* Unified 3D Isometric Floating Buttons */
+.btn-hover-effect,
+.btn-join-primary,
+.btn-about-secondary,
+.btn-form-next,
+.btn-form-back,
+.btn-bulk-toggle,
+.btn-register-email-alt,
+.btn-google-auth,
+.select-tile,
+.category-card,
+.btn-cogwheel {
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.25s ease,
+              border-color 0.25s ease,
+              color 0.25s ease !important;
 }
 
-.btn-hover-effect:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px var(--glow-color);
+.btn-hover-effect:hover,
+.btn-join-primary:hover,
+.btn-about-secondary:hover,
+.btn-form-next:hover,
+.btn-register-email-alt:hover,
+.btn-google-auth:hover {
+  transform: translate3d(-2px, -5px, 0) scale(1.025) !important;
+  box-shadow: 6px 14px 28px -3px rgba(0, 117, 162, 0.45), 2px 6px 12px rgba(28, 36, 76, 0.16) !important;
 }
 
-.btn-hover-effect:active {
-  transform: translateY(0);
+.dark .btn-hover-effect:hover,
+.dark .btn-join-primary:hover,
+.dark .btn-about-secondary:hover,
+.dark .btn-form-next:hover,
+.dark .btn-register-email-alt:hover,
+.dark .btn-google-auth:hover {
+  box-shadow: 6px 14px 30px -3px rgba(83, 175, 208, 0.55), 0 0 20px rgba(0, 0, 0, 0.8) !important;
+}
+
+.btn-hover-effect:active,
+.btn-join-primary:active,
+.btn-about-secondary:active,
+.btn-form-next:active,
+.btn-form-back:active,
+.btn-register-email-alt:active,
+.btn-google-auth:active,
+.select-tile:active,
+.category-card:active,
+.btn-cogwheel:active {
+  transform: translate3d(0, 1px, 0) scale(0.985) !important;
+  box-shadow: 0 2px 6px rgba(0, 117, 162, 0.3) !important;
 }
 
 /* Global motion-reduction override */
@@ -108,4 +151,155 @@ h1, h2, h3, .font-title {
   animation-iteration-count: 1 !important;
   transition-duration: 0.001ms !important;
   scroll-behavior: auto !important;
+  transform: none !important;
 }
+
+/* =========================================================================
+   Browser Autofill Styling Normalization (Chrome, Edge, Safari, Firefox)
+   Eliminates gray/pale-yellow browser default backgrounds in light & dark mode
+   ========================================================================= */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active,
+input:autofill,
+textarea:autofill,
+select:autofill {
+  -webkit-box-shadow: 0 0 0px 1000px #FFFFFF inset !important;
+  box-shadow: 0 0 0px 1000px #FFFFFF inset !important;
+  -webkit-text-fill-color: #101426 !important;
+  color: #101426 !important;
+  caret-color: #101426 !important;
+  transition: background-color 5000000s ease-in-out 0s, color 5000000s ease-in-out 0s !important;
+}
+
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #FFFFFF inset, 0 0 0 3px rgba(0, 117, 162, 0.22) !important;
+  box-shadow: 0 0 0px 1000px #FFFFFF inset, 0 0 0 3px rgba(0, 117, 162, 0.22) !important;
+  border-color: #0075A2 !important;
+}
+
+/* Dark Mode Autofill */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active,
+.dark textarea:-webkit-autofill,
+.dark textarea:-webkit-autofill:hover,
+.dark textarea:-webkit-autofill:focus,
+.dark textarea:-webkit-autofill:active,
+.dark select:-webkit-autofill,
+.dark select:-webkit-autofill:hover,
+.dark select:-webkit-autofill:focus,
+.dark select:-webkit-autofill:active,
+.dark input:autofill,
+.dark textarea:autofill,
+.dark select:autofill {
+  -webkit-box-shadow: 0 0 0px 1000px #15162C inset !important;
+  box-shadow: 0 0 0px 1000px #15162C inset !important;
+  -webkit-text-fill-color: #F6F6F6 !important;
+  color: #F6F6F6 !important;
+  caret-color: #F6F6F6 !important;
+  border-color: rgba(83, 175, 208, 0.3) !important;
+  transition: background-color 5000000s ease-in-out 0s, color 5000000s ease-in-out 0s !important;
+}
+
+.dark input:-webkit-autofill:focus,
+.dark textarea:-webkit-autofill:focus,
+.dark select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #15162C inset, 0 0 0 3px rgba(83, 175, 208, 0.3) !important;
+  box-shadow: 0 0 0px 1000px #15162C inset, 0 0 0 3px rgba(83, 175, 208, 0.3) !important;
+  border-color: #53afd0 !important;
+}
+
+/* Site-wide Loading Screen Animations & Glass Backdrop */
+.site-loader-overlay {
+  background: rgba(246, 246, 246, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  animation: loaderFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .site-loader-overlay {
+  background: rgba(21, 22, 44, 0.92);
+}
+
+.loader-logo-card {
+  border-radius: 50% !important;
+  background: #FFFFFF;
+  border: 2px solid rgba(28, 36, 76, 0.2);
+  box-shadow: 0 25px 60px -10px rgba(28, 36, 76, 0.2), 0 0 30px rgba(0, 117, 162, 0.12);
+  animation: loaderBreathe 3.5s ease-in-out infinite;
+}
+
+.dark .loader-logo-card {
+  background: rgba(28, 36, 76, 0.95);
+  border-color: rgba(83, 175, 208, 0.38);
+  box-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.8), 0 0 35px rgba(83, 175, 208, 0.3);
+}
+
+.loader-spinner-ring {
+  border-radius: 50% !important;
+}
+
+.animate-loaderFade {
+  animation: loaderContentFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-breathe {
+  animation: logoBreathe 3.5s ease-in-out infinite;
+}
+
+@keyframes loaderFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+}
+
+@keyframes loaderContentFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes loaderBreathe {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.03);
+  }
+}
+
+@keyframes logoBreathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+

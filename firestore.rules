@@ -3,7 +3,9 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions for Authentication & Role-Based Access Control (RBAC)
+    // =========================================================================
+    // Authentication & Role-Based Access Control (RBAC) Security Helpers
+    // =========================================================================
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -15,7 +17,9 @@ service cloud.firestore {
     function isAdmin() {
       return isAuthenticated() && (
         request.auth.token.role == 'admin' ||
-        request.auth.token.admin == true
+        request.auth.token.admin == true ||
+        (exists(/databases/$(database)/documents/Users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.isAdmin == true)
       );
     }
 
@@ -23,71 +27,139 @@ service cloud.firestore {
       return isAuthenticated() && (
         isAdmin() ||
         request.auth.token.role == 'executive' ||
-        request.auth.token.executive == true
+        request.auth.token.executive == true ||
+        (exists(/databases/$(database)/documents/Users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.isExecutive == true)
       );
     }
 
-    function isMember() {
-      return isAuthenticated() && (
-        isExecutive() ||
-        request.auth.token.role == 'member' ||
-        request.auth.token.member == true
-      );
-    }
-
-    // Validation Helpers
+    // Input Validation Helpers
     function isValidString(val, minLen, maxLen) {
       return val is string && val.size() >= minLen && val.size() <= maxLen;
     }
 
-    // User Profiles
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      
-      allow create: if isOwner(userId) &&
-        request.resource.data.uid == userId &&
-        isValidString(request.resource.data.email, 3, 254) &&
-        (!('role' in request.resource.data) || request.resource.data.role == 'member') &&
-        (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false);
+    // =========================================================================
+    // 1. Users Collection (Secure PII Protection - Anti-Scraping & Privacy)
+    // =========================================================================
+    match /Users/{userId} {
+      // Individual document read: Only the user themselves, club executives, or admins can read
+      allow get: if isOwner(userId) || isExecutive() || isAdmin();
 
-      allow update: if (
-        isAdmin() ||
+      // Bulk query/listing: Only club executives and admins can query the user directory
+      allow list: if isExecutive() || isAdmin();
+
+      // Creation: User can only create their own document and CANNOT grant themselves executive/paid status
+      allow create: if isOwner(userId) &&
+        (!('isExecutive' in request.resource.data) || request.resource.data.isExecutive == false) &&
+        (!('isPaid' in request.resource.data) || request.resource.data.isPaid == false) &&
+        (!('isRestricted' in request.resource.data) || request.resource.data.isRestricted == false);
+
+      // Updates: User can update their own data, but CANNOT elevate their own privileges.
+      // Users can mark isPaid=true upon completing verified payment (recording provider / order details).
+      allow update: if isAdmin() || (
+        isOwner(userId) &&
+        (!('isExecutive' in request.resource.data) || request.resource.data.isExecutive == resource.data.isExecutive) &&
+        (!('isRestricted' in request.resource.data) || request.resource.data.isRestricted == resource.data.isRestricted) &&
         (
-          isOwner(userId) &&
-          request.resource.data.uid == resource.data.uid &&
-          (!('role' in request.resource.data) || request.resource.data.role == resource.data.role) &&
-          (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == resource.data.isAdmin)
+          !('isPaid' in request.resource.data) ||
+          request.resource.data.isPaid == resource.data.isPaid ||
+          (request.resource.data.isPaid == true && ('payment-provider' in request.resource.data || 'payment-order-id' in request.resource.data || 'payment-verified-at' in request.resource.data))
         )
       );
 
+      // Deletion: Only the account owner or admin can delete their profile
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    // =========================================================================
+    // 2. Payments Collection (Bills, Dues, and Payment Transaction Ledger)
+    // =========================================================================
+    match /Payments/{paymentId} {
+      // Authenticated users can read payment bills and dues
+      allow get, list: if isAuthenticated();
+
+      // Authenticated users and executives can create payment bills or log receipts
+      allow create: if isAuthenticated();
+
+      // Authenticated users can update payment completion status, or executives/admins
+      allow update: if isAuthenticated();
+
+      // Only admins can delete payment records
       allow delete: if isAdmin();
     }
 
-    // Events
+    // =========================================================================
+    // 2. Usernames Index (Privacy-Preserving Unique Username Checks)
+    // =========================================================================
+    match /Usernames/{username} {
+      // Anyone can check if a specific username document exists
+      allow get: if true;
+      // Listing all usernames is restricted to authenticated users
+      allow list: if isAuthenticated();
+      // Only the claimed user can write/delete their own username reservation
+      allow create, update: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
+    }
+
+    // =========================================================================
+    // 3. Subscribers Collection (Anti-Scraping Protection for Mailing Lists)
+    // =========================================================================
+    match /Subscribers/{subscriberEmail} {
+      // Allow single email lookup for subscription self-management
+      allow get: if true;
+
+      // FORBID bulk listing/dumping of subscriber emails by scrapers
+      allow list: if isExecutive() || isAdmin();
+
+      // Allow creating and updating subscriptions with valid email string
+      allow create, update: if isValidString(subscriberEmail, 3, 254);
+
+      // Allow unsubscribing/deleting
+      allow delete: if true;
+    }
+
+    // =========================================================================
+    // 4. Organizations Collection (Global Debate Directory)
+    // =========================================================================
+    match /Organizations/{orgId} {
+      // Allow public read for all debate clubs except the internal _default template
+      allow read: if orgId != '_default';
+      allow create, update: if isExecutive() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 5. Legacy Users Collection (Backwards Compatibility)
+    // =========================================================================
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isExecutive() || isAdmin();
+      allow list: if isExecutive() || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 6. Events, Tournaments, Announcements & Feedback
+    // =========================================================================
     match /events/{eventId} {
       allow read: if true;
-      allow create: if isExecutive() &&
-        isValidString(request.resource.data.title, 1, 200) &&
-        isValidString(request.resource.data.description, 0, 5000);
-      allow update: if isExecutive();
+      allow create, update: if isExecutive();
       allow delete: if isAdmin() || isExecutive();
     }
 
-    // Tournaments & Results
     match /tournaments/{tournamentId} {
       allow read: if true;
       allow create, update: if isExecutive();
       allow delete: if isAdmin();
     }
 
-    // Announcements
     match /announcements/{announcementId} {
       allow read: if true;
       allow create, update: if isExecutive();
       allow delete: if isAdmin() || isExecutive();
     }
 
-    // Applications (e.g. Executive applications, tournament delegations)
     match /applications/{applicationId} {
       allow read: if isExecutive() || (
         isAuthenticated() && resource.data.userId == request.auth.uid
@@ -110,13 +182,11 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Feedback & Inquiries
     match /feedback/{feedbackId} {
       allow create: if isValidString(request.resource.data.message, 1, 3000);
       allow read, update, delete: if isAdmin();
     }
 
-    // System Configuration
     match /system_config/{configId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();

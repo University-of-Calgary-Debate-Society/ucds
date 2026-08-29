@@ -62,10 +62,11 @@ const NAV_CATEGORIES: NavCategory[] = [
     name: 'Members',
     icon: Users,
     subcategories: [
-      { title: 'Membership Portal', href: '/member/dashboard', desc: 'Active members hub' },
-      { title: 'Executive Portal', href: '/executive/portal', desc: 'Restricted leadership portal' },
+      { title: 'Membership Portal', href: '/member/portal', desc: 'Active members profile & hub' },
+      { title: 'Member Login', href: '/member/login', desc: 'Sign in to access your portal' },
       { title: 'Join / Register', href: '/member/register', desc: 'Become an official member' },
-      { title: 'Adjudication Log', href: '/member/judging', desc: 'Track tournament judging' },
+      { title: 'Mailing Preferences', href: '/member/unsubscribe', desc: 'Manage or unsubscribe newsletters' },
+      { title: 'Executive Portal', href: '/executive/portal', desc: 'Restricted leadership portal' },
     ],
   },
   {
@@ -140,9 +141,9 @@ export const FloatingNavbar: React.FC = () => {
         })}
       </div>
 
-      {/* Subcategories Sliding Drawer (to the right) */}
+      {/* Subcategories Sliding Drawer (Smooth category switch with key & staggered items) */}
       {selectedCategoryObj && (
-        <div className="subcategories-drawer">
+        <div key={selectedCategoryObj.id} className="subcategories-drawer">
           <div className="flex items-center justify-between pb-3 mb-2 border-b border-[#1C244C]/15 dark:border-[#53afd0]/20">
             <div className="flex items-center gap-2">
               <selectedCategoryObj.icon className="w-4 h-4 text-[#0075A2] dark:text-[#53afd0]" />
@@ -160,23 +161,28 @@ export const FloatingNavbar: React.FC = () => {
           </div>
 
           <div className="space-y-1">
-            {selectedCategoryObj.subcategories.map((sub) => (
-              <a
+            {selectedCategoryObj.subcategories.map((sub, idx) => (
+              <div
                 key={sub.title}
-                href={sub.href}
-                className="subcategory-link group"
-                onClick={() => setActiveCategory(null)}
+                className="subcategory-animated-item"
+                style={{ animationDelay: `${idx * 40}ms` }}
               >
-                <div>
-                  <div className="subcategory-title">
-                    {sub.title}
+                <a
+                  href={sub.href}
+                  className="subcategory-link group"
+                  onClick={() => setActiveCategory(null)}
+                >
+                  <div>
+                    <div className="subcategory-title">
+                      {sub.title}
+                    </div>
+                    <div className="subcategory-desc">
+                      {sub.desc}
+                    </div>
                   </div>
-                  <div className="subcategory-desc">
-                    {sub.desc}
-                  </div>
-                </div>
-                <ChevronRight className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[#0075A2] dark:text-[#53afd0]" />
-              </a>
+                  <ChevronRight className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[#0075A2] dark:text-[#53afd0]" />
+                </a>
+              </div>
             ))}
           </div>
         </div>

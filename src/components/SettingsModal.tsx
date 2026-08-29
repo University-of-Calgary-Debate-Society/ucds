@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { X, Sun, Moon, Sparkles, EyeOff, ShieldCheck, Check } from 'lucide-react';
+import { Sun, Moon, Sparkles, EyeOff, ShieldCheck, Check } from 'lucide-react';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 
 export const SettingsModal: React.FC = () => {
@@ -46,27 +46,19 @@ export const SettingsModal: React.FC = () => {
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h2 id="settings-modal-title" className="font-bold text-lg text-[#1C244C] dark:text-[#F6F6F6]">
+              <h2 id="settings-modal-title" className="modal-header-title">
                 Site Settings
               </h2>
-              <p className="text-xs text-[#0075A2] dark:text-[#53afd0]">
+              <p className="text-xs font-medium text-[#0075A2] dark:text-[#53afd0]">
                 Preferences & Accessibility
               </p>
             </div>
           </div>
-
-          <button
-            onClick={() => setIsSettingsOpen(false)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#1C244C]/60 dark:text-[#F6F6F6]/60 hover:text-[#1C244C] dark:hover:text-[#F6F6F6] hover:bg-[#1C244C]/10 dark:hover:bg-[#53afd0]/20 transition"
-            aria-label="Close settings"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Setting 1: Theme Mode Switch */}
         <div className="mb-5">
-          <label className="block text-xs font-bold uppercase tracking-wider text-[#1C244C]/70 dark:text-[#cbd5e1] mb-2">
+          <label className="modal-section-label">
             Appearance Theme
           </label>
           <div className="p-4 rounded-2xl bg-white/70 dark:bg-[#1C244C]/50 border border-[#1C244C]/12 dark:border-[#53afd0]/20 flex items-center justify-between gap-4">
@@ -109,7 +101,7 @@ export const SettingsModal: React.FC = () => {
 
         {/* Setting 2: Animations / Reduced Motion Switch */}
         <div className="mb-6">
-          <label className="block text-xs font-bold uppercase tracking-wider text-[#1C244C]/70 dark:text-[#cbd5e1] mb-2">
+          <label className="modal-section-label">
             Visual Motion & Effects
           </label>
           <div className="p-4 rounded-2xl bg-white/70 dark:bg-[#1C244C]/50 border border-[#1C244C]/12 dark:border-[#53afd0]/20 flex items-center justify-between gap-4">
@@ -150,15 +142,15 @@ export const SettingsModal: React.FC = () => {
           </div>
         </div>
 
-        {/* Modal Footer with Checkmark Button */}
+        {/* Modal Footer with Animated Checkmark Button */}
         <div className="pt-2 flex justify-end">
           <button
             onClick={() => setIsSettingsOpen(false)}
-            className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#1C244C] text-[#F6F6F6] dark:bg-[#53afd0] dark:text-[#15162C] hover:opacity-90 transition shadow-md shadow-[#0075A2]/20"
+            className="btn-settings-check group"
             title="Save and Close"
             aria-label="Save and Close"
           >
-            <Check className="w-5 h-5" />
+            <Check className="w-5 h-5 transition-transform group-hover:scale-110" />
           </button>
         </div>
       </div>

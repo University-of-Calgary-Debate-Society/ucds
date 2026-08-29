@@ -23,7 +23,8 @@
   border-bottom: 1px solid rgba(83, 175, 208, 0.15);
 }
 
-.header-left, .header-right {
+.header-left,
+.header-right {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -56,36 +57,61 @@
   transform: scale(1.06);
 }
 
-/* Header Cogwheel Button */
+/* Header Cogwheel & Action Buttons */
 .btn-cogwheel {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 42px;
   height: 42px;
-  border-radius: 12px;
+  border-radius: 14px;
   background: rgba(28, 36, 76, 0.06);
-  border: 1px solid rgba(28, 36, 76, 0.12);
+  border: 1.5px solid rgba(28, 36, 76, 0.14);
   color: #1C244C;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(28, 36, 76, 0.06);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.25s ease,
+              border-color 0.25s ease,
+              color 0.25s ease;
+}
+
+.btn-cogwheel svg {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark .btn-cogwheel {
   background: rgba(83, 175, 208, 0.1);
-  border: 1px solid rgba(83, 175, 208, 0.2);
+  border: 1.5px solid rgba(83, 175, 208, 0.25);
   color: #F6F6F6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
+/* Hover: The button raises with 3D elevation (never rotates the container) */
 .btn-cogwheel:hover {
-  background: rgba(0, 117, 162, 0.15);
+  background: #FFFFFF;
+  border-color: #0075A2;
   color: #0075A2;
-  transform: rotate(30deg) scale(1.05);
+  transform: translate3d(-1px, -3px, 0);
+  box-shadow: 0 8px 20px -3px rgba(0, 117, 162, 0.35), 0 2px 6px rgba(28, 36, 76, 0.08);
+}
+
+/* Only the cog icon rotates inside */
+.btn-cogwheel:hover svg {
+  transform: rotate(90deg) scale(1.12);
 }
 
 .dark .btn-cogwheel:hover {
-  background: rgba(83, 175, 208, 0.2);
+  background: rgba(28, 36, 76, 0.95);
+  border-color: #53afd0;
   color: #53afd0;
+  box-shadow: 0 8px 22px -3px rgba(83, 175, 208, 0.5), 0 0 16px rgba(0, 0, 0, 0.6);
+}
+
+.btn-cogwheel:active {
+  transform: translate3d(0, 1px, 0) scale(0.97);
+  box-shadow: 0 2px 4px rgba(0, 117, 162, 0.2);
 }
 
 /* Header Auth Button */
@@ -94,7 +120,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.55rem 1.25rem;
-  border-radius: 9999px;
+  border-radius: 10px;
   font-family: 'Outfit', sans-serif;
   font-size: 0.9rem;
   font-weight: 600;
@@ -139,9 +165,9 @@
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -153,25 +179,97 @@
   width: 100%;
   max-width: 440px;
   background: #F6F6F6;
-  border: 1px solid rgba(28, 36, 76, 0.15);
+  border: 1.5px solid rgba(28, 36, 76, 0.2);
   border-radius: 28px;
   padding: 2rem;
   box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4);
   animation: modalPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #1C244C;
 }
 
 .dark .settings-modal-card {
   background: #15162C;
-  border: 1px solid rgba(83, 175, 208, 0.25);
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 35px 2px rgba(83, 175, 208, 0.12);
+  border: 1.5px solid rgba(83, 175, 208, 0.3);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 35px 2px rgba(83, 175, 208, 0.15);
+  color: #F6F6F6;
+}
+
+.modal-header-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: #1C244C !important;
+}
+
+.dark .modal-header-title {
+  color: #F6F6F6 !important;
+  text-shadow: 0 0 15px rgba(83, 175, 208, 0.3);
+}
+
+.modal-section-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #1C244C !important;
+  margin-bottom: 0.5rem;
+}
+
+.dark .modal-section-label {
+  color: #cbd5e1 !important;
+}
+
+/* Animated Checkmark Button */
+.btn-settings-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #1C244C;
+  color: #F6F6F6;
+  border: 1px solid rgba(83, 175, 208, 0.3);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 6px 18px -2px rgba(0, 117, 162, 0.35);
+}
+
+.dark .btn-settings-check {
+  background: #53afd0;
+  color: #15162C;
+  border: 1px solid rgba(83, 175, 208, 0.6);
+  box-shadow: 0 6px 18px -2px rgba(83, 175, 208, 0.45);
+}
+
+.btn-settings-check:hover {
+  transform: scale(1.12) rotate(4deg);
+  box-shadow: 0 10px 24px -2px rgba(83, 175, 208, 0.6);
+}
+
+.btn-settings-check:active {
+  transform: scale(0.95);
 }
 
 @keyframes modalBackdropFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes modalPopIn {
-  from { opacity: 0; transform: scale(0.92) translateY(12px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
