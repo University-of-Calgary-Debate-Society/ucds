@@ -6,13 +6,13 @@ import { initializeAppCheck, ReCaptchaV3Provider, type AppCheck } from 'firebase
 
 // Environment variables configuration
 export const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyBBhqUR9zKC0bmvZGfgLkvetgGH-5UBJFI',
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'ucds-f5db9.firebaseapp.com',
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'ucds-f5db9',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'ucds-f5db9.appspot.com',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || '',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'ucds-f5db9.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '179956125478',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:179956125478:web:aefea28728026263a43be7',
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-LD17NHLFET',
   appCheckSiteKey: import.meta.env.VITE_FIREBASE_APPCHECK_SITE_KEY || '',
 };
 
