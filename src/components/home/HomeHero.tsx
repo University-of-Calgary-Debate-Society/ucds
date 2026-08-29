@@ -5,47 +5,53 @@ import { RotatingBackground } from './RotatingBackground';
 export const HomeHero: React.FC = () => {
   return (
     <div className="home-hero-container">
-      {/* Background Rotating 3D Carousel / Fading Gallery */}
+      {/* Background Rotating 3D Inward Carousel / Fading Gallery */}
       <RotatingBackground />
 
       {/* Center Animated Title Card Container */}
       <div className="hero-content-wrapper">
         <div className="hero-glass-card">
-          {/* Floating Flying Badges hovering around title card */}
+          {/* Floating Flying Badges hovering around title card (Nested to preserve float on hover) */}
           {/* Badge 1: Canada Flag (top-right) */}
-          <div className="floating-badge badge-canada" title="Canadian University Society for Intercollegiate Debate">
-            <img
-              src="/photos/canada_flag.png"
-              alt="Canada Flag"
-              className="w-full h-full object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/images/photos/canada_flag.png';
-              }}
-            />
+          <div className="floating-badge-anchor badge-canada" title="Canadian University Society for Intercollegiate Debate">
+            <div className="floating-badge-scaler">
+              <img
+                src="/photos/canada_flag.png"
+                alt="Canada Flag"
+                className="w-full h-full object-contain pointer-events-none"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/images/photos/canada_flag.png';
+                }}
+              />
+            </div>
           </div>
 
           {/* Badge 2: Rex Mascot (bottom-left) */}
-          <div className="floating-badge badge-rex" title="Rex - UCDS Mascot">
-            <img
-              src="/photos/rex.png"
-              alt="Rex Mascot"
-              className="w-full h-full object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/images/photos/rex.png';
-              }}
-            />
+          <div className="floating-badge-anchor badge-rex" title="Rex - UCDS Mascot">
+            <div className="floating-badge-scaler">
+              <img
+                src="/photos/rex.png"
+                alt="Rex Mascot"
+                className="w-full h-full object-contain pointer-events-none"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/images/photos/rex.png';
+                }}
+              />
+            </div>
           </div>
 
           {/* Badge 3: UCalgary Coat of Arms (top-left) */}
-          <div className="floating-badge badge-ucalgary" title="University of Calgary">
-            <img
-              src="/photos/ucalgary.png"
-              alt="University of Calgary Coat of Arms"
-              className="w-full h-full object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/images/photos/ucalgary.png';
-              }}
-            />
+          <div className="floating-badge-anchor badge-ucalgary" title="University of Calgary">
+            <div className="floating-badge-scaler">
+              <img
+                src="/photos/ucalgary.png"
+                alt="University of Calgary Coat of Arms"
+                className="w-full h-full object-contain pointer-events-none"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/images/photos/ucalgary.png';
+                }}
+              />
+            </div>
           </div>
 
           {/* Title Part 1: Smaller text above */}

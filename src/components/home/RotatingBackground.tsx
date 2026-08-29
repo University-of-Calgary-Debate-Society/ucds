@@ -27,12 +27,12 @@ export const RotatingBackground: React.FC = () => {
   }, [animationsEnabled]);
 
   const totalCards = CAROUSEL_IMAGES.length;
-  // Radius of 3D cylinder
-  const radius = 580;
+  // Inward viewing cylinder radius
+  const radius = 620;
 
   return (
     <>
-      {/* 3D Depth Rotating Carousel (Active Motion Mode) */}
+      {/* 3D Depth Inward Concave Rotating Carousel ("Inside view") */}
       {animationsEnabled && (
         <div className="carousel-stage" aria-hidden="true">
           <div className="carousel-cylinder">
@@ -43,7 +43,7 @@ export const RotatingBackground: React.FC = () => {
                   key={img.id}
                   className="carousel-card"
                   style={{
-                    transform: `rotateY(${angle}deg) translateZ(${radius}px)`,
+                    transform: `rotateY(${angle}deg) translateZ(-${radius}px) rotateY(180deg)`,
                   }}
                 >
                   <img

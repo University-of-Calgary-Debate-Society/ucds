@@ -115,7 +115,7 @@ export const FloatingNavbar: React.FC = () => {
   return (
     <nav
       ref={containerRef}
-      className="floating-nav-container"
+      className={`floating-nav-container ${activeCategory ? 'has-active-menu' : ''}`}
       aria-label="Main floating navigation"
     >
       {/* Pillar with 6 main icons */}
@@ -143,16 +143,16 @@ export const FloatingNavbar: React.FC = () => {
       {/* Subcategories Sliding Drawer (to the right) */}
       {selectedCategoryObj && (
         <div className="subcategories-drawer">
-          <div className="flex items-center justify-between pb-3 mb-2 border-b border-[#1C244C]/10 dark:border-[#53afd0]/20">
+          <div className="flex items-center justify-between pb-3 mb-2 border-b border-[#1C244C]/15 dark:border-[#53afd0]/20">
             <div className="flex items-center gap-2">
               <selectedCategoryObj.icon className="w-4 h-4 text-[#0075A2] dark:text-[#53afd0]" />
-              <span className="font-title font-bold text-sm text-[#1C244C] dark:text-[#F6F6F6]">
+              <span className="drawer-header-title">
                 {selectedCategoryObj.name}
               </span>
             </div>
             <button
               onClick={() => setActiveCategory(null)}
-              className="p-1 rounded-lg text-[#1C244C]/60 dark:text-[#F6F6F6]/60 hover:bg-[#1C244C]/10 dark:hover:bg-[#53afd0]/20 transition"
+              className="p-1 rounded-lg text-[#1C244C]/70 dark:text-[#F6F6F6]/70 hover:bg-[#1C244C]/10 dark:hover:bg-[#53afd0]/20 transition"
               aria-label="Close category menu"
             >
               <X className="w-3.5 h-3.5" />
@@ -168,14 +168,14 @@ export const FloatingNavbar: React.FC = () => {
                 onClick={() => setActiveCategory(null)}
               >
                 <div>
-                  <div className="font-semibold text-xs text-[#1C244C] dark:text-[#F6F6F6] group-hover:text-[#0075A2] dark:group-hover:text-[#53afd0] transition-colors">
+                  <div className="subcategory-title">
                     {sub.title}
                   </div>
-                  <div className="text-[11px] text-[#0075A2]/80 dark:text-[#cbd5e1]/70">
+                  <div className="subcategory-desc">
                     {sub.desc}
                   </div>
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[#0075A2] dark:text-[#53afd0]" />
+                <ChevronRight className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[#0075A2] dark:text-[#53afd0]" />
               </a>
             ))}
           </div>

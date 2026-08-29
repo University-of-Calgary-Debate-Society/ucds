@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { X, Sun, Moon, Sparkles, EyeOff, ShieldCheck } from 'lucide-react';
+import { X, Sun, Moon, Sparkles, EyeOff, ShieldCheck, Check } from 'lucide-react';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 
 export const SettingsModal: React.FC = () => {
@@ -40,7 +40,7 @@ export const SettingsModal: React.FC = () => {
     >
       <div ref={cardRef} className="settings-modal-card">
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-[#1C244C]/10 dark:border-[#53afd0]/20 mb-6">
+        <div className="flex items-center justify-between pb-4 border-b border-[#1C244C]/15 dark:border-[#53afd0]/20 mb-6">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-[#0075A2]/10 dark:bg-[#53afd0]/20 text-[#0075A2] dark:text-[#53afd0] flex items-center justify-center">
               <ShieldCheck className="w-5 h-5" />
@@ -64,44 +64,55 @@ export const SettingsModal: React.FC = () => {
           </button>
         </div>
 
-        {/* Setting 1: Theme Mode */}
-        <div className="mb-6">
-          <label className="block text-xs font-bold uppercase tracking-wider text-[#1C244C]/70 dark:text-[#cbd5e1] mb-2.5">
+        {/* Setting 1: Theme Mode Switch */}
+        <div className="mb-5">
+          <label className="block text-xs font-bold uppercase tracking-wider text-[#1C244C]/70 dark:text-[#cbd5e1] mb-2">
             Appearance Theme
           </label>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => theme === 'dark' && toggleTheme()}
-              className={`flex items-center justify-center gap-2 p-3 rounded-2xl border text-sm font-semibold transition ${
-                theme === 'light'
-                  ? 'bg-white border-[#0075A2] text-[#0075A2] shadow-md shadow-[#0075A2]/15 ring-2 ring-[#0075A2]/20'
-                  : 'bg-[#1C244C]/5 border-transparent text-[#1C244C]/70 hover:bg-[#1C244C]/10'
-              }`}
-            >
-              <Sun className="w-4 h-4" />
-              <span>Light Mode</span>
-            </button>
+          <div className="p-4 rounded-2xl bg-white/70 dark:bg-[#1C244C]/50 border border-[#1C244C]/12 dark:border-[#53afd0]/20 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-[#0075A2]/10 dark:bg-[#53afd0]/20 text-[#0075A2] dark:text-[#53afd0]">
+                {theme === 'dark' ? (
+                  <Moon className="w-4 h-4" />
+                ) : (
+                  <Sun className="w-4 h-4" />
+                )}
+              </div>
+              <div>
+                <p className="text-sm font-bold text-[#1C244C] dark:text-[#F6F6F6]">
+                  {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                </p>
+                <p className="text-xs text-[#0075A2] dark:text-[#cbd5e1] mt-0.5">
+                  {theme === 'dark'
+                    ? 'Dark blue high-contrast palette active'
+                    : 'Clean light off-white palette active'}
+                </p>
+              </div>
+            </div>
 
             <button
-              onClick={() => theme === 'light' && toggleTheme()}
-              className={`flex items-center justify-center gap-2 p-3 rounded-2xl border text-sm font-semibold transition ${
-                theme === 'dark'
-                  ? 'bg-[#1C244C] border-[#53afd0] text-[#53afd0] shadow-md shadow-[#53afd0]/20 ring-2 ring-[#53afd0]/30'
-                  : 'bg-white/50 dark:bg-[#15162C]/60 border-transparent text-[#cbd5e1] hover:bg-[#53afd0]/10'
+              onClick={toggleTheme}
+              role="switch"
+              aria-checked={theme === 'dark'}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                theme === 'dark' ? 'bg-[#0075A2]' : 'bg-slate-300 dark:bg-slate-700'
               }`}
             >
-              <Moon className="w-4 h-4" />
-              <span>Dark Mode</span>
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                  theme === 'dark' ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
             </button>
           </div>
         </div>
 
-        {/* Setting 2: Animations / Reduced Motion */}
+        {/* Setting 2: Animations / Reduced Motion Switch */}
         <div className="mb-6">
-          <label className="block text-xs font-bold uppercase tracking-wider text-[#1C244C]/70 dark:text-[#cbd5e1] mb-2.5">
+          <label className="block text-xs font-bold uppercase tracking-wider text-[#1C244C]/70 dark:text-[#cbd5e1] mb-2">
             Visual Motion & Effects
           </label>
-          <div className="p-4 rounded-2xl bg-white/70 dark:bg-[#1C244C]/50 border border-[#1C244C]/10 dark:border-[#53afd0]/20 flex items-center justify-between gap-4">
+          <div className="p-4 rounded-2xl bg-white/70 dark:bg-[#1C244C]/50 border border-[#1C244C]/12 dark:border-[#53afd0]/20 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-[#0075A2]/10 dark:bg-[#53afd0]/20 text-[#0075A2] dark:text-[#53afd0]">
                 {animationsEnabled ? (
@@ -139,13 +150,15 @@ export const SettingsModal: React.FC = () => {
           </div>
         </div>
 
-        {/* Modal Footer */}
+        {/* Modal Footer with Checkmark Button */}
         <div className="pt-2 flex justify-end">
           <button
             onClick={() => setIsSettingsOpen(false)}
-            className="px-5 py-2 rounded-xl bg-[#1C244C] text-[#F6F6F6] dark:bg-[#53afd0] dark:text-[#15162C] font-semibold text-xs tracking-wide hover:opacity-90 transition shadow-sm"
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#1C244C] text-[#F6F6F6] dark:bg-[#53afd0] dark:text-[#15162C] hover:opacity-90 transition shadow-md shadow-[#0075A2]/20"
+            title="Save and Close"
+            aria-label="Save and Close"
           >
-            Done
+            <Check className="w-5 h-5" />
           </button>
         </div>
       </div>
