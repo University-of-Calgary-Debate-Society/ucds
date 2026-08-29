@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/deploymentguide.tsx","./src/components/firebasedemo.tsx","./src/components/statusbadge.tsx","./src/components/themetoggle.tsx","./src/contexts/authcontext.tsx","./src/hooks/useauth.ts","./src/lib/firebase.ts","./src/lib/utils.ts","./src/services/firestore.ts"],"version":"5.7.3"}

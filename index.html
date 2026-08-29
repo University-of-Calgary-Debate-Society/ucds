@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C8102E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m12 19 7-7 3 3-7 7-3-3z'/><path d='m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z'/><path d='m2 2 7.586 7.586'/><circle cx='11' cy='11' r='2'/></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>University of Calgary Debate Society (UCDS)</title>
+    <meta name="description" content="Official web platform of the University of Calgary Debate Society - Tournaments, Training, Membership, and Community." />
+    
+    <!-- Theme Flash Prevention (System / LocalStorage Sync) -->
+    <script>
+      (function() {
+        try {
+          var storedTheme = localStorage.getItem('ucds_theme');
+          var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (storedTheme === 'dark' || (!storedTheme && systemDark)) {
+            document.documentElement.classList.add('dark');
+            document.querySelector('meta[name="color-scheme"]').content = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.querySelector('meta[name="color-scheme"]').content = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- GitHub Pages Single Page App Deep-Linking Redirection Handler -->
+    <script type="text/javascript">
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location))
+    </script>
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-red-500 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
