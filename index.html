@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth" style="background-color: #F6F6F6;">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/images/seo/logo_normal.png" />
@@ -13,18 +13,25 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Theme Flash Prevention (System / LocalStorage Sync) -->
+    <!-- Theme Flash & Blank Screen Prevention (System / LocalStorage Sync) -->
     <script>
       (function() {
         try {
           var storedTheme = localStorage.getItem('ucds_theme');
           var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (storedTheme === 'dark' || (!storedTheme && systemDark)) {
+          var isDark = storedTheme === 'dark' || (!storedTheme && systemDark);
+          if (isDark) {
             document.documentElement.classList.add('dark');
-            document.querySelector('meta[name="color-scheme"]').content = 'dark';
+            document.documentElement.style.backgroundColor = '#15162C';
+            if (document.body) document.body.style.backgroundColor = '#15162C';
+            var meta = document.querySelector('meta[name="color-scheme"]');
+            if (meta) meta.content = 'dark';
           } else {
             document.documentElement.classList.remove('dark');
-            document.querySelector('meta[name="color-scheme"]').content = 'light';
+            document.documentElement.style.backgroundColor = '#F6F6F6';
+            if (document.body) document.body.style.backgroundColor = '#F6F6F6';
+            var meta = document.querySelector('meta[name="color-scheme"]');
+            if (meta) meta.content = 'light';
           }
           var storedAnim = localStorage.getItem('ucds_animations');
           var systemReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

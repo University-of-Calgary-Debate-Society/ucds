@@ -23,6 +23,7 @@ import {
   CheckCheck,
   Building2,
   Lock,
+  Loader2,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -372,7 +373,25 @@ export const MemberPortal: React.FC = () => {
   };
 
   if (loading) {
-    return <LoadingScreen message="Loading your Member Portal..." />;
+    return (
+      <div className="w-full flex-1 flex flex-col items-center justify-center p-4 sm:p-8 animate-viewFadeIn">
+        {/* Subtle theme-aware skeleton placeholder while loading under 5 seconds */}
+        <div className="member-card w-full max-w-4xl p-8 space-y-6 opacity-60 pointer-events-none">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-slate-200 dark:bg-slate-800 animate-pulse" />
+            <div className="space-y-2 flex-1">
+              <div className="h-6 w-48 bg-slate-200 dark:bg-slate-800 rounded-md animate-pulse" />
+              <div className="h-4 w-72 bg-slate-200 dark:bg-slate-800 rounded-md animate-pulse" />
+            </div>
+          </div>
+          <div className="h-10 w-full bg-slate-200 dark:bg-slate-800 rounded-xl animate-pulse" />
+          <div className="h-48 w-full bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse" />
+        </div>
+
+        {/* If loading takes more than 500ms, bring up the seasonal loading screen */}
+        <LoadingScreen delayMs={500} message="Loading your Member Portal..." />
+      </div>
+    );
   }
 
   if (!profile) return null;
@@ -825,9 +844,14 @@ export const MemberPortal: React.FC = () => {
         {activeTab === 'mailing' && (
           <div className="member-card max-w-none animate-viewFadeIn space-y-6">
             <div className="pb-4 border-b border-[rgba(28,36,76,0.15)] dark:border-[rgba(83,175,208,0.22)]">
-              <h2 className="member-card-title text-2xl text-[#101426] dark:text-[#F6F6F6]">
-                Society Mailing Lists & Communications
-              </h2>
+              <div className="flex items-center gap-3">
+                <h2 className="member-card-title text-2xl text-[#101426] dark:text-[#F6F6F6]">
+                  Society Mailing Lists & Communications
+                </h2>
+                {isUpdatingLists && (
+                  <Loader2 className="w-5 h-5 text-[#0075A2] dark:text-[#53afd0] animate-spin shrink-0 transition-opacity duration-200" />
+                )}
+              </div>
               <p className="text-xs font-bold text-[#0075A2] dark:text-[#53afd0] mt-0.5">
                 Toggle your newsletter, tournament briefing, and workshop notifications.
               </p>
@@ -864,24 +888,33 @@ export const MemberPortal: React.FC = () => {
                       </p>
                     </div>
 
-                    <button
-                      type="button"
-                      disabled={isUpdatingLists}
-                      onClick={() => handleToggleMailingList(listName)}
-                      className={`btn-mailing-toggle py-2 px-5 text-xs font-black rounded-xl transition-all duration-200 flex items-center gap-2 ${isSubscribed
-                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md'
-                          : 'btn-form-back hover:border-[#0075A2]'
-                        }`}
-                    >
-                      {isSubscribed ? (
-                        <>
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Subscribed</span>
-                        </>
-                      ) : (
-                        <span>Subscribe</span>
-                      )}
-                    </button>
+                    <div className="flex items-center gap-3 self-center sm:self-auto">
+                      <span
+                        className={`text-xs font-black tracking-wide min-w-[72px] text-right transition-colors ${isSubscribed
+                            ? 'text-[#0075A2] dark:text-[#53afd0]'
+                            : 'text-slate-500 dark:text-slate-400'
+                          }`}
+                      >
+                        {isSubscribed ? 'Subscribed' : 'Off'}
+                      </span>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={isSubscribed}
+                        aria-label={`Toggle subscription for ${listName}`}
+                        disabled={isUpdatingLists}
+                        onClick={() => handleToggleMailingList(listName)}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isSubscribed
+                            ? 'bg-[#0075A2]'
+                            : 'bg-slate-300 dark:bg-slate-700'
+                          } ${isUpdatingLists ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${isSubscribed ? 'translate-x-5' : 'translate-x-0'
+                            }`}
+                        />
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -1087,9 +1120,11 @@ export const MemberPortal: React.FC = () => {
                           <span
                             className={`text-[11px] font-black px-2.5 py-0.5 rounded-full ${item.statusType === 'paid' || item.statusType === 'exempt'
                                 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300'
-                                : item.statusType === 'unpaid'
-                                  ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300'
-                                  : 'bg-blue-50 dark:bg-blue-950/60 text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                                : item.statusType === 'closed'
+                                  ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-300'
+                                  : item.statusType === 'upcoming'
+                                    ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                                    : 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300'
                               }`}
                           >
                             {item.statusText}
@@ -1155,12 +1190,37 @@ export const MemberPortal: React.FC = () => {
                       </p>
                     </div>
                   </div>
+                ) : selectedItem.isUpcoming ? (
+                  <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-300 dark:border-blue-800 flex items-center gap-3 text-blue-950 dark:text-blue-200">
+                    <Clock className="w-5 h-5 flex-shrink-0 text-[#0075A2] dark:text-[#53afd0]" />
+                    <div>
+                      <p className="font-title font-black text-sm">
+                        Membership Registration Opens {selectedItem.timeOpenFormatted}
+                      </p>
+                      <p className="text-xs font-semibold opacity-95">
+                        Payment options will automatically activate once the registration window opens.
+                      </p>
+                    </div>
+                  </div>
+                ) : selectedItem.isClosed ? (
+                  <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 flex items-center gap-3 text-rose-950 dark:text-rose-200">
+                    <AlertTriangle className="w-5 h-5 flex-shrink-0 text-rose-600 dark:text-rose-400" />
+                    <div>
+                      <p className="font-title font-black text-sm">
+                        Payment Window Closed (Deadline: {selectedItem.timeDeadlineFormatted})
+                      </p>
+                      <p className="text-xs font-semibold opacity-95">
+                        The deadline for this payment has passed. Please contact VP Finance if you require an extension.
+                      </p>
+                    </div>
+                  </div>
                 ) : (
                   <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-400 dark:border-amber-700 flex items-center gap-3 text-amber-950 dark:text-amber-100">
                     <AlertTriangle className="w-5 h-5 flex-shrink-0 text-amber-700 dark:text-amber-400" />
                     <div>
                       <p className="font-title font-black text-sm">
                         Membership Dues Payment Required ({selectedItem.amountFormatted})
+                        {selectedItem.timeDeadlineFormatted && ` — Due by ${selectedItem.timeDeadlineFormatted}`}
                       </p>
                       <p className="text-xs font-semibold opacity-95">
                         Please choose a payment method below to complete your registration.
@@ -1180,12 +1240,37 @@ export const MemberPortal: React.FC = () => {
                     </p>
                   </div>
                 </div>
+              ) : selectedItem.isUpcoming ? (
+                <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-300 dark:border-blue-800 flex items-center gap-3 text-blue-950 dark:text-blue-200">
+                  <Clock className="w-5 h-5 flex-shrink-0 text-[#0075A2] dark:text-[#53afd0]" />
+                  <div>
+                    <p className="font-title font-black text-sm">
+                      Registration Opens {selectedItem.timeOpenFormatted} ({selectedItem.amountFormatted})
+                    </p>
+                    <p className="text-xs font-semibold opacity-95">
+                      Payment options will unlock when tournament convenors publish the docket.
+                    </p>
+                  </div>
+                </div>
+              ) : selectedItem.isClosed ? (
+                <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 flex items-center gap-3 text-rose-950 dark:text-rose-200">
+                  <AlertTriangle className="w-5 h-5 flex-shrink-0 text-rose-600 dark:text-rose-400" />
+                  <div>
+                    <p className="font-title font-black text-sm">
+                      Payment Closed (Deadline was {selectedItem.timeDeadlineFormatted})
+                    </p>
+                    <p className="text-xs font-semibold opacity-95">
+                      Registrations are no longer being accepted for this event.
+                    </p>
+                  </div>
+                </div>
               ) : (
                 <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-400 dark:border-amber-700 flex items-center gap-3 text-amber-950 dark:text-amber-100">
                   <AlertTriangle className="w-5 h-5 flex-shrink-0 text-amber-700 dark:text-amber-400" />
                   <div>
                     <p className="font-title font-black text-sm">
                       {selectedItem.title} Payment Required ({selectedItem.amountFormatted})
+                      {selectedItem.timeDeadlineFormatted && ` — Due ${selectedItem.timeDeadlineFormatted}`}
                     </p>
                     <p className="text-xs font-semibold opacity-95">
                       Please select an authorized payment option below to finalize registration.
@@ -1194,8 +1279,8 @@ export const MemberPortal: React.FC = () => {
                 </div>
               )}
 
-              {/* Payment Method Action Buttons (Filtered by allowed-payments in Firestore document) */}
-              {selectedItem.statusType === 'unpaid' && (
+              {/* Payment Method Action Buttons (Only when open and unpaid) */}
+              {selectedItem.statusType === 'unpaid' && selectedItem.isOpen && (
                 <div className="space-y-3 pt-2">
                   <span className="text-xs font-black text-[#0075A2] dark:text-[#53afd0] uppercase tracking-wider block">
                     Choose Payment Option

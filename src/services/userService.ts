@@ -240,7 +240,7 @@ export async function getOrganizations(): Promise<OrganizationDoc[]> {
 
   const orgs: OrganizationDoc[] = [];
   snap.forEach((docSnap) => {
-    if (docSnap.id !== '_default') {
+    if (docSnap.id !== '_default' && !docSnap.id.startsWith('_')) {
       orgs.push({
         id: docSnap.id,
         ...(docSnap.data() as Omit<OrganizationDoc, 'id'>),

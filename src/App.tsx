@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { FloatingNavbar } from '@/components/FloatingNavbar';
 import { SettingsModal } from '@/components/SettingsModal';
+import { PageTransitionWrapper } from '@/components/PageTransitionWrapper';
 import { HomeHero } from '@/components/home/HomeHero';
 import { MemberLogin } from '@/components/member/MemberLogin';
 import { MemberRegister } from '@/components/member/MemberRegister';
@@ -27,21 +28,23 @@ export const App: React.FC = () => {
       {/* Settings Modal (Theme & Motion Toggle) */}
       <SettingsModal />
 
-      {/* Page Routing */}
+      {/* Page Routing with Theme-Aware Fade In & Fade Out Transitions */}
       <main className="flex-1 w-full flex flex-col">
-        <Routes>
-          {/* Homepage */}
-          <Route path="/" element={<HomeHero />} />
+        <PageTransitionWrapper>
+          <Routes>
+            {/* Homepage */}
+            <Route path="/" element={<HomeHero />} />
 
-          {/* Member Section */}
-          <Route path="/member/login" element={<MemberLogin />} />
-          <Route path="/member/register" element={<MemberRegister />} />
-          <Route path="/member/portal" element={<MemberPortal />} />
-          <Route path="/member/unsubscribe" element={<Unsubscribe />} />
+            {/* Member Section */}
+            <Route path="/member/login" element={<MemberLogin />} />
+            <Route path="/member/register" element={<MemberRegister />} />
+            <Route path="/member/portal" element={<MemberPortal />} />
+            <Route path="/member/unsubscribe" element={<Unsubscribe />} />
 
-          {/* Fallback to Home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Fallback to Home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </PageTransitionWrapper>
       </main>
     </div>
   );
