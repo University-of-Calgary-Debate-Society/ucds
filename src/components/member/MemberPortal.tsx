@@ -306,7 +306,7 @@ export const MemberPortal: React.FC = () => {
 
     setIsSaving(true);
     try {
-      let safeRoles = [...roles];
+      const safeRoles = [...roles];
       if (isAlumni && !safeRoles.some((r) => r.toLowerCase() === 'alumni')) {
         safeRoles.push('alumni');
       }
