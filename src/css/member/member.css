@@ -966,22 +966,30 @@
 /* Organization & Role Picker Modal */
 .modal-org-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(15, 23, 42, 0.65);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  z-index: 10000;
+  z-index: 100000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1.25rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   animation: modalOverlayFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-org-content {
+  position: relative;
   width: 100%;
   max-width: 620px;
-  max-height: 85vh;
+  max-height: calc(100vh - 2.5rem);
   display: flex;
   flex-direction: column;
   background: #FFFFFF;
@@ -992,6 +1000,7 @@
   overflow-y: auto;
   animation: modalPopSmooth 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   transform-origin: center center;
+  margin: auto;
 }
 
 @keyframes modalOverlayFade {
@@ -1201,17 +1210,18 @@
 }
 
 .animate-viewFadeIn {
-  animation: viewContentFade 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: viewContentFade 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
 }
 
 @keyframes viewContentFade {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(12px) scale(0.995);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -1328,6 +1338,10 @@
 .dark .portal-tab-btn:hover {
   color: #53afd0;
   background: rgba(83, 175, 208, 0.12);
+}
+
+.portal-tab-btn:active {
+  transform: scale(0.96);
 }
 
 .portal-tab-btn.active {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
   Mail,
@@ -96,6 +97,30 @@ export const MemberPortal: React.FC = () => {
   // Mailing list subscriptions state
   const [subscriberLists, setSubscriberLists] = useState<string[]>([]);
   const [isUpdatingLists, setIsUpdatingLists] = useState(false);
+
+  // Lock background scroll when any modal is open
+  useEffect(() => {
+    const isAnyModalOpen =
+      isStripeModalOpen ||
+      isPayPalModalOpen ||
+      isInteracModalOpen ||
+      isRolesModalOpen ||
+      isGradModalOpen;
+
+    if (isAnyModalOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [
+    isStripeModalOpen,
+    isPayPalModalOpen,
+    isInteracModalOpen,
+    isRolesModalOpen,
+    isGradModalOpen,
+  ]);
 
   // Feedback alerts
   const [error, setError] = useState<string | null>(null);
@@ -465,19 +490,6 @@ export const MemberPortal: React.FC = () => {
                 @{profile.username || 'member'}
               </p>
             </div>
-
-            <div className="flex items-center gap-3">
-              {activeTab === 'profile' && (
-                <button
-                  type="button"
-                  className="btn-bulk-toggle flex items-center gap-2 py-2 px-4 text-xs font-bold"
-                  onClick={() => setIsEditing(!isEditing)}
-                >
-                  <Edit2 className="w-3.5 h-3.5" />
-                  <span>{isEditing ? 'Cancel Editing' : 'Edit Profile'}</span>
-                </button>
-              )}
-            </div>
           </div>
 
           {/* Status Banners */}
@@ -578,11 +590,19 @@ export const MemberPortal: React.FC = () => {
 
         {/* TAB 1: PROFILE TAB */}
         {activeTab === 'profile' && (
-          <div className="member-card max-w-none transition-all duration-300 animate-viewFadeIn">
+          <div key="profile" className="member-card max-w-none transition-all duration-300 animate-viewFadeIn">
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-[rgba(28,36,76,0.15)] dark:border-[rgba(83,175,208,0.22)]">
               <h2 className="member-card-title text-2xl transition-all duration-300 text-[#101426] dark:text-[#F6F6F6]">
                 {isEditing ? 'Edit Profile Details' : 'Account Overview'}
               </h2>
+              <button
+                type="button"
+                className="btn-bulk-toggle flex items-center gap-2 py-2 px-4 text-xs font-bold transition-all shadow-xs"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+                <span>{isEditing ? 'Cancel Editing' : 'Edit Profile'}</span>
+              </button>
             </div>
 
             <div className="portal-edit-view-container">
@@ -842,7 +862,7 @@ export const MemberPortal: React.FC = () => {
 
         {/* TAB 2: MAILING LISTS TAB */}
         {activeTab === 'mailing' && (
-          <div className="member-card max-w-none animate-viewFadeIn space-y-6">
+          <div key="mailing" className="member-card max-w-none animate-viewFadeIn space-y-6">
             <div className="pb-4 border-b border-[rgba(28,36,76,0.15)] dark:border-[rgba(83,175,208,0.22)]">
               <div className="flex items-center gap-3">
                 <h2 className="member-card-title text-2xl text-[#101426] dark:text-[#F6F6F6]">
@@ -924,7 +944,7 @@ export const MemberPortal: React.FC = () => {
 
         {/* TAB 3: FORMS TAB (Crisp Off-White in Light Mode) */}
         {activeTab === 'forms' && (
-          <div className="member-card max-w-none animate-viewFadeIn space-y-6">
+          <div key="forms" className="member-card max-w-none animate-viewFadeIn space-y-6">
             <div className="pb-4 border-b border-[rgba(28,36,76,0.15)] dark:border-[rgba(83,175,208,0.22)]">
               <h2 className="member-card-title text-2xl text-[#101426] dark:text-[#F6F6F6]">
                 Society Documents & Member Forms
@@ -1052,7 +1072,7 @@ export const MemberPortal: React.FC = () => {
 
         {/* TAB 4: REGISTRATIONS TAB (Crisp Off-White in Light Mode) */}
         {activeTab === 'registrations' && (
-          <div className="member-card max-w-none animate-viewFadeIn">
+          <div key="registrations" className="member-card max-w-none animate-viewFadeIn">
             <div className="pb-4 mb-6 border-b border-[rgba(28,36,76,0.15)] dark:border-[rgba(83,175,208,0.22)]">
               <h2 className="member-card-title text-2xl text-[#101426] dark:text-[#F6F6F6]">
                 Event & Tournament Registrations
@@ -1079,7 +1099,7 @@ export const MemberPortal: React.FC = () => {
 
         {/* TAB 5: MULTI-ITEM PAYMENTS TAB (Dynamic from Firestore Payments Collection) */}
         {activeTab === 'payments' && (
-          <div className="member-card max-w-none animate-viewFadeIn space-y-6">
+          <div key="payments" className="member-card max-w-none animate-viewFadeIn space-y-6">
             <div className="pb-4 border-b border-[rgba(28,36,76,0.15)] dark:border-[rgba(83,175,208,0.22)]">
               <h2 className="member-card-title text-2xl text-[#101426] dark:text-[#F6F6F6]">
                 Membership Dues & Payments
@@ -1393,422 +1413,432 @@ export const MemberPortal: React.FC = () => {
       </div>
 
       {/* POPUP 1: STRIPE CHECKOUT MODAL */}
-      {isStripeModalOpen && (
-        <div className="modal-org-overlay" onClick={() => setIsStripeModalOpen(false)}>
-          <div
-            className="modal-org-content max-w-lg p-6 sm:p-7 space-y-5"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-          >
-            <div className="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#0075A2]/10 dark:bg-[#53afd0]/20 text-[#0075A2] dark:text-[#53afd0] flex items-center justify-center">
-                  <CreditCard className="w-6 h-6" />
+      {isStripeModalOpen &&
+        createPortal(
+          <div className="modal-org-overlay" onClick={() => setIsStripeModalOpen(false)}>
+            <div
+              className="modal-org-content max-w-lg p-6 sm:p-7 space-y-5"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+            >
+              <div className="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-[#0075A2]/10 dark:bg-[#53afd0]/20 text-[#0075A2] dark:text-[#53afd0] flex items-center justify-center">
+                    <CreditCard className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="modal-header-title">
+                      Stripe Card Checkout
+                    </h3>
+                    <p className="modal-header-subtitle">
+                      256-Bit SSL Encrypted Payment
+                    </p>
+                  </div>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsStripeModalOpen(false)}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                  aria-label="Close dialog"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Item Summary Card */}
+              <div className="modal-inner-card flex items-center justify-between">
                 <div>
-                  <h3 className="modal-header-title">
-                    Stripe Card Checkout
-                  </h3>
-                  <p className="modal-header-subtitle">
-                    256-Bit SSL Encrypted Payment
-                  </p>
+                  <span className="text-[11px] font-black uppercase tracking-wider text-[#0075A2] dark:text-[#53afd0] block">
+                    {selectedItem.category}
+                  </span>
+                  <h4 className="font-title font-black text-sm text-[#101426] dark:text-[#F6F6F6]">
+                    {selectedItem.title}
+                  </h4>
+                </div>
+                <span className="font-title font-black text-xl text-[#0075A2] dark:text-[#53afd0]">
+                  {selectedItem.amountFormatted}
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <p className="modal-body-text">
+                  You will be redirected to the official Stripe hosted checkout. Your payment will be verified instantly upon completion and your membership status will update in real-time.
+                </p>
+
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400">
+                  <Lock className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                  <span>Supports Visa, Mastercard, American Express, Apple Pay, Google Pay</span>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsStripeModalOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
-                aria-label="Close dialog"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  className="btn-form-back py-2.5 px-5 text-xs font-bold"
+                  onClick={() => setIsStripeModalOpen(false)}
+                >
+                  Cancel
+                </button>
 
-            {/* Item Summary Card */}
-            <div className="modal-inner-card flex items-center justify-between">
-              <div>
-                <span className="text-[11px] font-black uppercase tracking-wider text-[#0075A2] dark:text-[#53afd0] block">
-                  {selectedItem.category}
-                </span>
-                <h4 className="font-title font-black text-sm text-[#101426] dark:text-[#F6F6F6]">
-                  {selectedItem.title}
-                </h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    redirectToStripeCheckout({
+                      userId: user?.uid || '',
+                      userEmail: profile['email-preferred'] || user?.email || '',
+                      userName: profile.username || '',
+                      priceAmountCents: selectedItem.amountCents,
+                    });
+                  }}
+                  className="btn-form-next py-2.5 px-6 text-xs font-black flex items-center gap-2 shadow-md"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Proceed to Stripe</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </button>
               </div>
-              <span className="font-title font-black text-xl text-[#0075A2] dark:text-[#53afd0]">
-                {selectedItem.amountFormatted}
-              </span>
             </div>
+          </div>,
+          document.body
+        )}
 
-            <div className="space-y-3">
+      {/* POPUP 2: PAYPAL CHECKOUT MODAL */}
+      {isPayPalModalOpen &&
+        createPortal(
+          <div className="modal-org-overlay" onClick={() => setIsPayPalModalOpen(false)}>
+            <div
+              className="modal-org-content max-w-lg p-6 sm:p-7 space-y-5"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+            >
+              <div className="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center font-title font-black text-xl">
+                    🅿️
+                  </div>
+                  <div>
+                    <h3 className="modal-header-title">
+                      PayPal Checkout
+                    </h3>
+                    <p className="modal-header-subtitle">
+                      Instant Verification via PayPal
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsPayPalModalOpen(false)}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                  aria-label="Close dialog"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Item Summary Card */}
+              <div className="modal-inner-card flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] font-black uppercase tracking-wider text-[#0075A2] dark:text-[#53afd0] block">
+                    {selectedItem.category}
+                  </span>
+                  <h4 className="font-title font-black text-sm text-[#101426] dark:text-[#F6F6F6]">
+                    {selectedItem.title}
+                  </h4>
+                </div>
+                <span className="font-title font-black text-xl text-[#0075A2] dark:text-[#53afd0]">
+                  {selectedItem.amountFormatted}
+                </span>
+              </div>
+
               <p className="modal-body-text">
-                You will be redirected to the official Stripe hosted checkout. Your payment will be verified instantly upon completion and your membership status will update in real-time.
+                Click the PayPal button below to sign in and authorize payment with your PayPal balance or linked bank account.
               </p>
 
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400">
-                <Lock className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                <span>Supports Visa, Mastercard, American Express, Apple Pay, Google Pay</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
-              <button
-                type="button"
-                className="btn-form-back py-2.5 px-5 text-xs font-bold"
-                onClick={() => setIsStripeModalOpen(false)}
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  redirectToStripeCheckout({
+              {/* Live PayPal Smart Button */}
+              <div className="w-full pt-1">
+                <PayPalButton
+                  orderDetails={{
                     userId: user?.uid || '',
                     userEmail: profile['email-preferred'] || user?.email || '',
                     userName: profile.username || '',
-                    priceAmountCents: selectedItem.amountCents,
-                  });
-                }}
-                className="btn-form-next py-2.5 px-6 text-xs font-black flex items-center gap-2 shadow-md"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>Proceed to Stripe</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* POPUP 2: PAYPAL CHECKOUT MODAL */}
-      {isPayPalModalOpen && (
-        <div className="modal-org-overlay" onClick={() => setIsPayPalModalOpen(false)}>
-          <div
-            className="modal-org-content max-w-lg p-6 sm:p-7 space-y-5"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-          >
-            <div className="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center font-title font-black text-xl">
-                  🅿️
-                </div>
-                <div>
-                  <h3 className="modal-header-title">
-                    PayPal Checkout
-                  </h3>
-                  <p className="modal-header-subtitle">
-                    Instant Verification via PayPal
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsPayPalModalOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
-                aria-label="Close dialog"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Item Summary Card */}
-            <div className="modal-inner-card flex items-center justify-between">
-              <div>
-                <span className="text-[11px] font-black uppercase tracking-wider text-[#0075A2] dark:text-[#53afd0] block">
-                  {selectedItem.category}
-                </span>
-                <h4 className="font-title font-black text-sm text-[#101426] dark:text-[#F6F6F6]">
-                  {selectedItem.title}
-                </h4>
-              </div>
-              <span className="font-title font-black text-xl text-[#0075A2] dark:text-[#53afd0]">
-                {selectedItem.amountFormatted}
-              </span>
-            </div>
-
-            <p className="modal-body-text">
-              Click the PayPal button below to sign in and authorize payment with your PayPal balance or linked bank account.
-            </p>
-
-            {/* Live PayPal Smart Button */}
-            <div className="w-full pt-1">
-              <PayPalButton
-                orderDetails={{
-                  userId: user?.uid || '',
-                  userEmail: profile['email-preferred'] || user?.email || '',
-                  userName: profile.username || '',
-                  itemId: selectedItem.id,
-                  itemTitle: selectedItem.title,
-                  amountCad: selectedItem.amountCents / 100,
-                }}
-                onSuccess={async (orderId) => {
-                  if (profile) {
-                    if (selectedItem.isMembershipDues) {
-                      setProfile({ ...profile, isPaid: true });
+                    itemId: selectedItem.id,
+                    itemTitle: selectedItem.title,
+                    amountCad: selectedItem.amountCents / 100,
+                  }}
+                  onSuccess={async (orderId) => {
+                    if (profile) {
+                      if (selectedItem.isMembershipDues) {
+                        setProfile({ ...profile, isPaid: true });
+                      }
+                      const targetEmail = profile['email-preferred'] || user?.email || '';
+                      await loadUserPayments(profile, targetEmail);
                     }
-                    const targetEmail = profile['email-preferred'] || user?.email || '';
-                    await loadUserPayments(profile, targetEmail);
-                  }
-                  setIsPayPalModalOpen(false);
-                  setSuccess(`Payment verified! Order #${orderId} completed successfully.`);
-                }}
-                onError={(err) => setError(err)}
-              />
+                    setIsPayPalModalOpen(false);
+                    setSuccess(`Payment verified! Order #${orderId} completed successfully.`);
+                  }}
+                  onError={(err) => setError(err)}
+                />
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* POPUP 3: INTERAC E-TRANSFER MODAL (With Copy Email Buttons) */}
-      {isInteracModalOpen && (
-        <div className="modal-org-overlay" onClick={() => setIsInteracModalOpen(false)}>
-          <div
-            className="modal-org-content max-w-lg p-6 sm:p-7 space-y-5"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-          >
-            <div className="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center">
-                  <Building2 className="w-6 h-6" />
+      {isInteracModalOpen &&
+        createPortal(
+          <div className="modal-org-overlay" onClick={() => setIsInteracModalOpen(false)}>
+            <div
+              className="modal-org-content max-w-lg p-6 sm:p-7 space-y-5"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+            >
+              <div className="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center">
+                    <Building2 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="modal-header-title">
+                      Interac e-Transfer Instructions
+                    </h3>
+                    <p className="modal-header-subtitle">
+                      Canadian Bank Transfer & Auto-Matching
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="modal-header-title">
-                    Interac e-Transfer Instructions
-                  </h3>
-                  <p className="modal-header-subtitle">
-                    Canadian Bank Transfer & Auto-Matching
-                  </p>
-                </div>
-              </div>
 
-              <button
-                type="button"
-                onClick={() => setIsInteracModalOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
-                aria-label="Close dialog"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Step 1: Transfer Destination & Copy Button */}
-            <div className="modal-inner-card space-y-2">
-              <span className="text-[11px] font-black uppercase tracking-wider text-[#0075A2] dark:text-[#53afd0] block">
-                1. Recipient Details
-              </span>
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="font-mono font-black text-sm text-[#101426] dark:text-[#F6F6F6]">
-                    finance@ucds.ca
-                  </p>
-                  <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                    TD Bank Autodeposit (No security question needed)
-                  </p>
-                </div>
                 <button
                   type="button"
-                  onClick={() => copyToClipboard('finance@ucds.ca', 'recipient')}
-                  className={`btn-copy-chip ${copiedRecipient ? 'copied' : ''}`}
+                  onClick={() => setIsInteracModalOpen(false)}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                  aria-label="Close dialog"
                 >
-                  {copiedRecipient ? (
-                    <>
-                      <CheckCheck className="w-3.5 h-3.5" />
-                      <span>Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Copy Email</span>
-                    </>
-                  )}
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-            </div>
 
-            {/* Step 2: Critical Required Memo Box & Copy Button */}
-            <div className="modal-amber-warning space-y-3 shadow-xs">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400 flex-shrink-0" />
-                <span className="font-black text-xs uppercase tracking-wide text-amber-950 dark:text-amber-200">
-                  2. Mandatory Transfer Memo
+              {/* Step 1: Transfer Destination & Copy Button */}
+              <div className="modal-inner-card space-y-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-[#0075A2] dark:text-[#53afd0] block">
+                  1. Recipient Details
                 </span>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-mono font-black text-sm text-[#101426] dark:text-[#F6F6F6]">
+                      finance@ucds.ca
+                    </p>
+                    <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                      TD Bank Autodeposit (No security question needed)
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard('finance@ucds.ca', 'recipient')}
+                    className={`btn-copy-chip ${copiedRecipient ? 'copied' : ''}`}
+                  >
+                    {copiedRecipient ? (
+                      <>
+                        <CheckCheck className="w-3.5 h-3.5" />
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copy Email</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
-              <p className="text-xs font-bold text-amber-950 dark:text-amber-200 leading-snug">
-                You MUST copy and paste your exact login email into the e-Transfer memo/message field so our automated verification script can match your payment:
+              {/* Step 2: Critical Required Memo Box & Copy Button */}
+              <div className="modal-amber-warning space-y-3 shadow-xs">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400 flex-shrink-0" />
+                  <span className="font-black text-xs uppercase tracking-wide text-amber-950 dark:text-amber-200">
+                    2. Mandatory Transfer Memo
+                  </span>
+                </div>
+
+                <p className="text-xs font-bold text-amber-950 dark:text-amber-200 leading-snug">
+                  You MUST copy and paste your exact login email into the e-Transfer memo/message field so our automated verification script can match your payment:
+                </p>
+
+                <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white dark:bg-black/50 border border-amber-300 dark:border-amber-700">
+                  <code className="font-mono font-black text-xs text-[#101426] dark:text-[#F6F6F6] truncate select-all">
+                    {memberLoginEmail}
+                  </code>
+
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(memberLoginEmail, 'memo')}
+                    className={`btn-copy-chip ${copiedMemo ? 'copied' : ''}`}
+                  >
+                    {copiedMemo ? (
+                      <>
+                        <CheckCheck className="w-3.5 h-3.5" />
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copy Memo</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <p className="modal-body-text italic">
+                *Incoming TD Bank autodeposit notifications are parsed automatically every 15-30 minutes. Once matched, your account will display as Paid immediately.
               </p>
 
-              <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white dark:bg-black/50 border border-amber-300 dark:border-amber-700">
-                <code className="font-mono font-black text-xs text-[#101426] dark:text-[#F6F6F6] truncate select-all">
-                  {memberLoginEmail}
-                </code>
-
+              <div className="flex items-center justify-end pt-3 border-t border-slate-200 dark:border-slate-800">
                 <button
                   type="button"
-                  onClick={() => copyToClipboard(memberLoginEmail, 'memo')}
-                  className={`btn-copy-chip ${copiedMemo ? 'copied' : ''}`}
+                  className="btn-form-next py-2.5 px-6 text-xs font-black"
+                  onClick={() => setIsInteracModalOpen(false)}
                 >
-                  {copiedMemo ? (
-                    <>
-                      <CheckCheck className="w-3.5 h-3.5" />
-                      <span>Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Copy Memo</span>
-                    </>
-                  )}
+                  Done
                 </button>
               </div>
             </div>
-
-            <p className="modal-body-text italic">
-              *Incoming TD Bank autodeposit notifications are parsed automatically every 15-30 minutes. Once matched, your account will display as Paid immediately.
-            </p>
-
-            <div className="flex items-center justify-end pt-3 border-t border-slate-200 dark:border-slate-800">
-              <button
-                type="button"
-                className="btn-form-next py-2.5 px-6 text-xs font-black"
-                onClick={() => setIsInteracModalOpen(false)}
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* Role Selection Modal (Alumni Strictly Excluded) */}
-      {isRolesModalOpen && (
-        <div className="modal-org-overlay" onClick={() => setIsRolesModalOpen(false)}>
-          <div className="modal-org-content max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="modal-header-title mb-2">
-              Select Participation Roles
-            </h3>
-            <p className="modal-body-text mb-4">
-              Choose all the roles and activities that describe your involvement:
-            </p>
+      {isRolesModalOpen &&
+        createPortal(
+          <div className="modal-org-overlay" onClick={() => setIsRolesModalOpen(false)}>
+            <div className="modal-org-content max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+              <h3 className="modal-header-title mb-2">
+                Select Participation Roles
+              </h3>
+              <p className="modal-body-text mb-4">
+                Choose all the roles and activities that describe your involvement:
+              </p>
 
-            <div className="tiles-grid mb-6">
-              {stockRolesOptions.map((role) => {
-                const isSelected = roles.includes(role);
-                return (
-                  <div
-                    key={role}
-                    className={`select-tile capitalize ${isSelected ? 'selected' : ''}`}
-                    onClick={() => {
-                      if (isSelected) {
-                        setRoles(roles.filter((r) => r !== role));
-                      } else {
-                        setRoles([...roles, role]);
-                      }
-                    }}
-                  >
-                    <span className="text-[#101426] dark:text-[#F6F6F6] font-bold">{role}</span>
-                    {isSelected && <Check className="w-4 h-4 text-[#0075A2] dark:text-[#53afd0]" />}
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                className="btn-form-next text-sm py-2 px-5"
-                onClick={() => setIsRolesModalOpen(false)}
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Graduation Confirmation Popup Modal (High-Contrast Light and Dark Mode) */}
-      {isGradModalOpen && (
-        <div className="modal-org-overlay" onClick={() => setIsGradModalOpen(false)}>
-          <div
-            className="modal-org-content max-w-lg p-6 sm:p-7 space-y-5"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
-                  <GraduationCap className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="modal-header-title">
-                    Graduation Confirmation
-                  </h3>
-                  <p className="modal-header-subtitle">
-                    Alumnus Status Verification
-                  </p>
-                </div>
+              <div className="tiles-grid mb-6">
+                {stockRolesOptions.map((role) => {
+                  const isSelected = roles.includes(role);
+                  return (
+                    <div
+                      key={role}
+                      className={`select-tile capitalize ${isSelected ? 'selected' : ''}`}
+                      onClick={() => {
+                        if (isSelected) {
+                          setRoles(roles.filter((r) => r !== role));
+                        } else {
+                          setRoles([...roles, role]);
+                        }
+                      }}
+                    >
+                      <span className="text-[#101426] dark:text-[#F6F6F6] font-bold">{role}</span>
+                      {isSelected && <Check className="w-4 h-4 text-[#0075A2] dark:text-[#53afd0]" />}
+                    </div>
+                  );
+                })}
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsGradModalOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
-                aria-label="Close dialog"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  className="btn-form-next text-sm py-2 px-5"
+                  onClick={() => setIsRolesModalOpen(false)}
+                >
+                  Done
+                </button>
+              </div>
             </div>
+          </div>,
+          document.body
+        )}
 
-            {/* Prompt Warning Message as requested */}
-            <div className="modal-amber-warning shadow-xs">
-              Congrats! Clicking this button will make you an Alumnus, are you sure you want to do that? This will be a headache for execs if you're lying &gt;:(
+      {/* Graduation Confirmation Popup Modal (High-Contrast Light and Dark Mode) */}
+      {isGradModalOpen &&
+        createPortal(
+          <div className="modal-org-overlay" onClick={() => setIsGradModalOpen(false)}>
+            <div
+              className="modal-org-content max-w-lg p-6 sm:p-7 space-y-5"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                    <GraduationCap className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="modal-header-title">
+                      Graduation Confirmation
+                    </h3>
+                    <p className="modal-header-subtitle">
+                      Alumnus Status Verification
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsGradModalOpen(false)}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                  aria-label="Close dialog"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Prompt Warning Message as requested */}
+              <div className="modal-amber-warning shadow-xs">
+                Congrats! Clicking this button will make you an Alumnus, are you sure you want to do that? This will be a headache for execs if you're lying &gt;:(
+              </div>
+
+              {/* Step Explanation & Notice */}
+              <p className="modal-body-text font-bold">
+                Becoming an Alumnus grants you lifetime dues exemption, moves you to the alumni directory, and waives UCalgary voting requirements.
+              </p>
+
+              {/* Modal Actions */}
+              <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  className="btn-form-back w-full sm:w-auto py-2.5 px-5 text-xs font-bold"
+                  onClick={() => {
+                    setIsGradModalOpen(false);
+                    setGradStep(0);
+                  }}
+                >
+                  Cancel
+                </button>
+
+                {/* Progressive Confirmation Button: "I'm Sure" -> "I'm Really Sure" -> "Graduate me already!" */}
+                <button
+                  type="button"
+                  disabled={isGraduating}
+                  onClick={handleGraduationStep}
+                  className={`btn-grad-confirm w-full sm:w-auto py-2.5 px-6 text-xs font-black rounded-xl transition-all duration-200 flex items-center justify-center gap-2 ${gradStep === 0
+                      ? 'bg-[#0075A2] text-white hover:bg-[#1C244C]'
+                      : gradStep === 1
+                        ? 'bg-amber-600 text-white hover:bg-amber-700 shadow-md'
+                        : 'bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-lg animate-pulse'
+                    }`}
+                >
+                  <GraduationCap className="w-4 h-4" />
+                  <span>{isGraduating ? 'Graduating...' : getGradButtonText()}</span>
+                </button>
+              </div>
             </div>
-
-            {/* Step Explanation & Notice */}
-            <p className="modal-body-text font-bold">
-              Becoming an Alumnus grants you lifetime dues exemption, moves you to the alumni directory, and waives UCalgary voting requirements.
-            </p>
-
-            {/* Modal Actions */}
-            <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
-              <button
-                type="button"
-                className="btn-form-back w-full sm:w-auto py-2.5 px-5 text-xs font-bold"
-                onClick={() => {
-                  setIsGradModalOpen(false);
-                  setGradStep(0);
-                }}
-              >
-                Cancel
-              </button>
-
-              {/* Progressive Confirmation Button: "I'm Sure" -> "I'm Really Sure" -> "Graduate me already!" */}
-              <button
-                type="button"
-                disabled={isGraduating}
-                onClick={handleGraduationStep}
-                className={`btn-grad-confirm w-full sm:w-auto py-2.5 px-6 text-xs font-black rounded-xl transition-all duration-200 flex items-center justify-center gap-2 ${gradStep === 0
-                    ? 'bg-[#0075A2] text-white hover:bg-[#1C244C]'
-                    : gradStep === 1
-                      ? 'bg-amber-600 text-white hover:bg-amber-700 shadow-md'
-                      : 'bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-lg animate-pulse'
-                  }`}
-              >
-                <GraduationCap className="w-4 h-4" />
-                <span>{isGraduating ? 'Graduating...' : getGradButtonText()}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

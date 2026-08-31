@@ -4,6 +4,7 @@ import { Header } from '@/components/Header';
 import { FloatingNavbar } from '@/components/FloatingNavbar';
 import { SettingsModal } from '@/components/SettingsModal';
 import { PageTransitionWrapper } from '@/components/PageTransitionWrapper';
+import { MiniScrollVisualizer } from '@/components/MiniScrollVisualizer';
 import { HomeHero } from '@/components/home/HomeHero';
 import { MemberLogin } from '@/components/member/MemberLogin';
 import { MemberRegister } from '@/components/member/MemberRegister';
@@ -27,6 +28,9 @@ export const App: React.FC = () => {
 
       {/* Settings Modal (Theme & Motion Toggle) */}
       <SettingsModal />
+
+      {/* Mini Scrollbar Progress & Visualizer */}
+      <MiniScrollVisualizer />
 
       {/* Page Routing with Theme-Aware Fade In & Fade Out Transitions */}
       <main className="flex-1 w-full flex flex-col">

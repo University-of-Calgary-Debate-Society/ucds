@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getSeasonalLogoInfo } from '@/utils/seasonalLogo';
+import { getAssetUrl } from '@/utils/assetUrl';
 
 export interface LoadingScreenProps {
   message?: string;
@@ -109,7 +110,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
             alt={altText}
             className="loader-logo-img w-full h-full object-contain relative z-10 animate-breathe"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = '/images/seo/logo_normal.png';
+              (e.target as HTMLImageElement).src = getAssetUrl('images/seo/logo_normal.png');
             }}
           />
         </div>

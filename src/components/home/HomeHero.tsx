@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Info, Sparkles } from 'lucide-react';
 import { RotatingBackground } from './RotatingBackground';
+import { getAssetUrl } from '@/utils/assetUrl';
 
 export const HomeHero: React.FC = () => {
   // Speech bubbles state for interactive badges
@@ -47,7 +48,7 @@ export const HomeHero: React.FC = () => {
       setRexClickCount(0);
       setShowGnome(true);
       try {
-        const audio = new Audio('/audio/gnome.mp3');
+        const audio = new Audio(getAssetUrl('audio/gnome.mp3'));
         audio.currentTime = 0;
         audio.play().catch((err) => {
           console.warn('Audio playback prevented or unsupported:', err);
@@ -103,7 +104,7 @@ export const HomeHero: React.FC = () => {
             )}
             <div className="floating-badge-scaler" onClick={handleCanadaClick}>
               <img
-                src="/images/photos/canada_flag.png"
+                src={getAssetUrl('images/photos/canada_flag.png')}
                 alt="Canada Flag"
                 className="w-full h-full object-contain pointer-events-none"
               />
@@ -116,7 +117,7 @@ export const HomeHero: React.FC = () => {
             {showGnome && (
               <div className="rex-gnome-amateur-popup" aria-hidden="true">
                 <img
-                  src="/images/photos/gnome.png"
+                  src={getAssetUrl('images/photos/gnome.png')}
                   alt="Gnome Easter Egg"
                   className="rex-gnome-amateur-img"
                 />
@@ -130,7 +131,7 @@ export const HomeHero: React.FC = () => {
             )}
             <div className="floating-badge-scaler" onClick={handleRexClick}>
               <img
-                src="/images/photos/rex.png"
+                src={getAssetUrl('images/photos/rex.png')}
                 alt="Rex Mascot"
                 className="w-full h-full object-contain pointer-events-none"
               />
@@ -146,7 +147,7 @@ export const HomeHero: React.FC = () => {
             )}
             <div className="floating-badge-scaler" onClick={handleUcalgaryClick}>
               <img
-                src="/images/photos/ucalgary.png"
+                src={getAssetUrl('images/photos/ucalgary.png')}
                 alt="University of Calgary Coat of Arms"
                 className="w-full h-full object-contain pointer-events-none"
               />
@@ -162,7 +163,7 @@ export const HomeHero: React.FC = () => {
             )}
             <div className="floating-badge-scaler" onClick={handleGavelClick}>
               <img
-                src="/images/photos/gavel.png"
+                src={getAssetUrl('images/photos/gavel.png')}
                 alt="Debate Gavel"
                 className="w-full h-full object-contain pointer-events-none"
               />

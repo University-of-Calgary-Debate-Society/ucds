@@ -8,6 +8,8 @@
  * - Otherwise (April 1 to May 31): Classic normal logo (logo_normal.png)
  */
 
+import { getAssetUrl } from './assetUrl';
+
 export interface SeasonalLogoInfo {
   logoFileName: string;
   logoUrl: string;
@@ -20,14 +22,11 @@ export function getSeasonalLogoInfo(customDate?: Date): SeasonalLogoInfo {
   const month = date.getMonth(); // 0-indexed: 0 = Jan, 11 = Dec
   const day = date.getDate(); // 1-31
 
-  const basePath = import.meta.env.BASE_URL || '/';
-  const cleanBase = basePath.endsWith('/') ? basePath : `${basePath}/`;
-
   // 1. Summer Pride Season: June, July, August (Months 5, 6, 7)
   if (month >= 5 && month <= 7) {
     return {
       logoFileName: 'logo_lgbtq.png',
-      logoUrl: `${cleanBase}images/seo/logo_lgbtq.png`,
+      logoUrl: getAssetUrl('images/seo/logo_lgbtq.png'),
       seasonName: 'Pride Season',
       altText: 'University of Calgary Debate Society Pride Logo',
     };
@@ -37,7 +36,7 @@ export function getSeasonalLogoInfo(customDate?: Date): SeasonalLogoInfo {
   if ((month === 11 && day >= 18) || month === 0 || month === 1 || month === 2) {
     return {
       logoFileName: 'logo_winter.png',
-      logoUrl: `${cleanBase}images/seo/logo_winter.png`,
+      logoUrl: getAssetUrl('images/seo/logo_winter.png'),
       seasonName: 'Winter Season',
       altText: 'University of Calgary Debate Society Winter Logo',
     };
@@ -47,7 +46,7 @@ export function getSeasonalLogoInfo(customDate?: Date): SeasonalLogoInfo {
   if ((month >= 8 && month <= 10) || (month === 11 && day < 18)) {
     return {
       logoFileName: 'logo_fall.png',
-      logoUrl: `${cleanBase}images/seo/logo_fall.png`,
+      logoUrl: getAssetUrl('images/seo/logo_fall.png'),
       seasonName: 'Fall Season',
       altText: 'University of Calgary Debate Society Fall Logo',
     };
@@ -56,7 +55,7 @@ export function getSeasonalLogoInfo(customDate?: Date): SeasonalLogoInfo {
   // 4. Otherwise (April 1 to May 31)
   return {
     logoFileName: 'logo_normal.png',
-    logoUrl: `${cleanBase}images/seo/logo_normal.png`,
+    logoUrl: getAssetUrl('images/seo/logo_normal.png'),
     seasonName: 'Classic',
     altText: 'University of Calgary Debate Society Logo',
   };

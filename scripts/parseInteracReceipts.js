@@ -22,12 +22,20 @@ import path from 'path';
 let serviceAccount;
 const serviceAccountPath = path.resolve('service-account.json');
 
-if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-  serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+const saEnv = process.env.FIREBASE_SERVICE_ACCOUNT || process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+
+if (saEnv) {
+  try {
+    serviceAccount = JSON.parse(saEnv);
+  } catch (err) {
+    console.error('Error: Failed to parse Firebase Service Account JSON from environment variable:', err);
+    process.exit(1);
+  }
 } else if (fs.existsSync(serviceAccountPath)) {
   serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
 } else {
   console.error('Error: No Firebase Service Account credentials found.');
+  console.error('Please configure the FIREBASE_SERVICE_ACCOUNT or FIREBASE_SERVICE_ACCOUNT_KEY secret in GitHub Repository Settings -> Secrets and variables -> Actions.');
   process.exit(1);
 }
 

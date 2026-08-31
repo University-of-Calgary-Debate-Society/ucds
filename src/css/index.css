@@ -54,10 +54,33 @@ h1, h2, h3, .font-title {
   font-family: 'Cinzel', serif;
 }
 
-/* Custom scrollbars */
+/* Mini scrollbar visualization - Hide default OS scrollbar on main viewport */
+html,
+body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+  width: 0;
+  height: 0;
+}
+
+/* Global Ultra-Mini Scrollbars for inner scrollable containers */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 117, 162, 0.35) transparent;
+}
+
+.dark * {
+  scrollbar-color: rgba(83, 175, 208, 0.35) transparent;
+}
+
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -65,12 +88,21 @@ h1, h2, h3, .font-title {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-highlight);
+  background: rgba(28, 36, 76, 0.2);
   border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(83, 175, 208, 0.25);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--ucds-cyan);
+  background: #0075A2;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #53afd0;
 }
 
 /* Glassmorphism utilities */

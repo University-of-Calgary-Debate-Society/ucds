@@ -4,6 +4,7 @@ import { Settings, LogIn, UserCircle, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { getSeasonalLogoInfo } from '@/utils/seasonalLogo';
+import { getAssetUrl } from '@/utils/assetUrl';
 
 export const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ export const Header: React.FC = () => {
           alt={altText}
           className="header-logo-img"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = '/images/seo/logo_normal.png';
+            (e.target as HTMLImageElement).src = getAssetUrl('images/seo/logo_normal.png');
           }}
         />
       </Link>
