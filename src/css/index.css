@@ -5,6 +5,7 @@
 @import "./navigation/navbar.css";
 @import "./home/home.css";
 @import "./member/member.css";
+@import "./connect/socials.css";
 
 @layer base {
   :root {
@@ -372,44 +373,26 @@ header,
   flex: 1 1 0%;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 80px);
-  will-change: opacity, transform;
+  min-height: calc(100vh - 72px);
 }
 
-/* Page Transition States */
-.page-transition-visible {
-  opacity: 1;
-  transform: translateY(0);
+.animate-pageEnter {
+  animation: pageEnterFade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.page-transition-fading-out {
-  opacity: 0;
-  transform: translateY(-4px);
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-}
-
-.page-transition-fading-in {
-  animation: pageSoftFadeIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes pageSoftFadeIn {
+@keyframes pageEnterFade {
   0% {
-    opacity: 0;
-    transform: translateY(6px);
+    opacity: 0.25;
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 /* Respect user preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .page-transition-wrapper,
-  .page-transition-fading-out,
-  .page-transition-fading-in,
+  .animate-pageEnter,
   .animate-viewFadeIn,
   .portal-dashboard-grid {
     animation: none !important;

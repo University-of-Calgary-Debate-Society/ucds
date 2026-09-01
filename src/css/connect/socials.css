@@ -1,0 +1,288 @@
+/* Connect - Social Media Page Styles & Animations - src/css/connect/socials.css */
+
+.socials-page-container {
+  width: 100%;
+  position: relative;
+  min-height: 100vh;
+  padding: 10.5rem 1.5rem 8rem; /* Generous top space between header and first card */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Viewport-Pinned Background Video Container (Stationary relative to window) */
+.socials-video-wrapper {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.socials-video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Highly Visible Background Video with Balanced Light / Dark Contrast Overlay */
+.socials-video-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(246, 246, 246, 0.28); /* Highly visible video in light mode */
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  transition: background 0.4s ease;
+}
+
+.dark .socials-video-overlay {
+  background: rgba(21, 22, 44, 0.38); /* Highly visible video in dark mode */
+  backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: blur(1.5px);
+}
+
+/* Main Content Layer (Positioned above Video) */
+.socials-content-layer {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Cards Stack: Centered & Extra Spaced Out */
+.socials-grid-track {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5.5rem; /* Generous space between cards */
+}
+
+.social-row-centered {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Sleek Compact Social Card */
+.social-card {
+  width: 100%;
+  max-width: 580px; /* Refined smaller card */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2.5px solid rgba(28, 36, 76, 0.2);
+  border-radius: 22px;
+  padding: 1.35rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  box-shadow: 0 8px 24px rgba(28, 36, 76, 0.08);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s ease,
+              background-color 0.35s ease;
+  position: relative;
+}
+
+.dark .social-card {
+  background: rgba(21, 22, 44, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2.5px solid rgba(83, 175, 208, 0.38);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+}
+
+/* Card Hover Raising Animation (No shiny gloss) */
+.social-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px -6px rgba(0, 117, 162, 0.25), 0 10px 20px rgba(28, 36, 76, 0.08);
+  border-color: rgba(0, 117, 162, 0.5);
+}
+
+.dark .social-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 22px 44px -6px rgba(0, 0, 0, 0.85), 0 0 28px 2px rgba(83, 175, 208, 0.35);
+  border-color: rgba(83, 175, 208, 0.6);
+}
+
+/* Free Floating Icon (No Surrounding Square Boxes) */
+.social-icon-anchor {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.social-free-icon {
+  width: 3.75rem;
+  height: 3.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2));
+  animation: socialIconFloat 3.8s ease-in-out infinite;
+  will-change: transform;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.3s ease;
+}
+
+.social-icon-anchor:hover .social-free-icon {
+  transform: scale(1.15) translateY(-4px);
+  filter: drop-shadow(0 12px 20px rgba(0, 117, 162, 0.45));
+}
+
+.dark .social-icon-anchor:hover .social-free-icon {
+  filter: drop-shadow(0 12px 22px rgba(83, 175, 208, 0.6));
+}
+
+.social-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Floating Animation Keyframe */
+@keyframes socialIconFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(1.5deg);
+  }
+}
+
+/* Social Card Typography (Matching Member Portal Fonts) */
+.social-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.social-tag {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #0075A2;
+  margin-bottom: 0.2rem;
+}
+
+.dark .social-tag {
+  color: #53afd0;
+}
+
+.social-platform-name {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 1.35rem;
+  color: #101426;
+  line-height: 1.2;
+}
+
+.dark .social-platform-name {
+  color: #F6F6F6;
+}
+
+.social-handle {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0075A2;
+  margin-top: 0.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dark .social-handle {
+  color: #53afd0;
+}
+
+/* Thick-Bordered Action Buttons with Light/Dark Centre */
+.btn-social-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #1C244C;
+  background-color: #FFFFFF;
+  border: 2.5px solid #1C244C;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(28, 36, 76, 0.08);
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dark .btn-social-action {
+  color: #F6F6F6;
+  background-color: #15162C;
+  border: 2.5px solid #53afd0;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+}
+
+.btn-social-action:hover {
+  transform: translateY(-2px) scale(1.03);
+  background-color: #1C244C;
+  color: #FFFFFF;
+  border-color: #0075A2;
+  box-shadow: 0 6px 18px rgba(0, 117, 162, 0.35);
+}
+
+.dark .btn-social-action:hover {
+  transform: translateY(-2px) scale(1.03);
+  background-color: #53afd0;
+  color: #15162C;
+  border-color: #F6F6F6;
+  box-shadow: 0 6px 20px rgba(83, 175, 208, 0.5);
+}
+
+.btn-social-action:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 640px) {
+  .socials-page-container {
+    padding: 7rem 1rem 4rem;
+  }
+
+  .social-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.5rem 1.25rem;
+    gap: 1rem;
+    max-width: 100%;
+  }
+
+  .social-row-centered {
+    justify-content: center;
+  }
+
+  .social-card-body {
+    align-items: center;
+  }
+
+  .btn-social-action {
+    width: 100%;
+  }
+}

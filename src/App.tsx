@@ -10,6 +10,7 @@ import { MemberLogin } from '@/components/member/MemberLogin';
 import { MemberRegister } from '@/components/member/MemberRegister';
 import { MemberPortal } from '@/components/member/MemberPortal';
 import { Unsubscribe } from '@/components/member/Unsubscribe';
+import { SocialMedia } from '@/components/connect/SocialMedia';
 import { updateSeasonalSeoTags } from '@/utils/seasonalLogo';
 
 export const App: React.FC = () => {
@@ -38,6 +39,10 @@ export const App: React.FC = () => {
           <Routes>
             {/* Homepage */}
             <Route path="/" element={<HomeHero />} />
+
+            {/* Connect Section */}
+            <Route path="/connect/socials" element={<SocialMedia />} />
+            <Route path="/connect/social-media" element={<SocialMedia />} />
 
             {/* Member Section */}
             <Route path="/member/login" element={<MemberLogin />} />

@@ -252,6 +252,43 @@ export async function getOrganizations(): Promise<OrganizationDoc[]> {
 }
 
 /**
+ * Fetch University of Calgary Debate Society organization document from Firestore Organizations collection.
+ */
+export async function getUcdsOrganization(): Promise<OrganizationDoc | null> {
+  if (!db) return null;
+  // Try direct fetch with slugified document id
+  try {
+    const docRef = doc(db, 'Organizations', 'university-of-calgary-debate-society');
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists() && docSnap.id !== '_default') {
+      return {
+        id: docSnap.id,
+        ...(docSnap.data() as Omit<OrganizationDoc, 'id'>),
+      };
+    }
+  } catch (e) {
+    console.warn('Direct UCDS doc lookup failed, checking collection:', e);
+  }
+
+  // Fallback: search Organizations collection for UCDS
+  try {
+    const allOrgs = await getOrganizations();
+    const found = allOrgs.find(
+      (org) =>
+        org.id.toLowerCase().includes('ucds') ||
+        org.id.toLowerCase().includes('calgary') ||
+        org.name?.toLowerCase().includes('calgary') ||
+        org['name-abbreviation']?.toUpperCase() === 'UCDS' ||
+        org['name-abbreviated']?.toUpperCase() === 'UCDS'
+    );
+    return found || null;
+  } catch (err) {
+    console.error('Failed to get UCDS organization doc:', err);
+    return null;
+  }
+}
+
+/**
  * Synchronize mailing list subscriptions for an email.
  * If lists are empty, removes the document from Subscribers collection to save space.
  */
