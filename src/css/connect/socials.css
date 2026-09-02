@@ -69,6 +69,33 @@
   justify-content: center;
 }
 
+/* Subtle Fade & Slide In from the Right */
+.social-row-enter {
+  opacity: 0;
+  transform: translateX(24px);
+  animation: socialRowSlideInRight 0.52s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes socialRowSlideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .social-row-enter {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
 /* Sleek Compact Social Card */
 .social-card {
   width: 100%;

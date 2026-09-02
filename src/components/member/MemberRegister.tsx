@@ -510,6 +510,7 @@ export const MemberRegister: React.FC = () => {
           program: ucalgaryStatus === 'current' ? program.trim() : '',
           year: ucalgaryStatus === 'current' ? (preferNotToSayYear ? 'Prefer not to say' : yearOfStudy.trim()) : '',
           type: mappedRoles,
+          'affiliated-organization': 'University of Calgary Debate Society',
           isPaid: false,
           isRegistered: true,
           isUCDS: true,
@@ -522,7 +523,7 @@ export const MemberRegister: React.FC = () => {
           pronouns: pronounsObj,
           phone: phone.trim(),
           type: externalRoles,
-          'affiliated-organization': affiliatedOrg.trim(),
+          'affiliated-organization': affiliatedOrg.trim() || 'Independent',
           isPaid: false,
           isRegistered: true,
           isUCDS: false,
@@ -1398,7 +1399,7 @@ export const MemberRegister: React.FC = () => {
                     </label>
                     <div className="flex items-center gap-3">
                       <div className="flex-1 form-input font-bold text-sm bg-slate-50 dark:bg-slate-900/50 flex items-center">
-                        {affiliatedOrg || <span className="text-slate-400 font-normal">None selected</span>}
+                        {affiliatedOrg || <span className="text-slate-500 font-medium">Independent (Unaffiliated)</span>}
                       </div>
                       <button
                         type="button"

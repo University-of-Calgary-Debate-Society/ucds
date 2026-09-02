@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  getUserProfile,
+  subscribeUserProfile,
   updateUserProfile,
   isUsernameAvailable,
   syncSubscriberDoc,
@@ -47,11 +47,13 @@ import {
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { FloatingAlert } from './FloatingAlert';
 import { PayPalButton } from './PayPalButton';
+import { useSmoothNavigate } from '@/utils/navigation';
 
 type PortalTab = 'profile' | 'mailing' | 'forms' | 'registrations' | 'payments';
 
 export const MemberPortal: React.FC = () => {
   const navigate = useNavigate();
+  const smoothNavigate = useSmoothNavigate();
   const { user, logout } = useAuth();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -86,6 +88,7 @@ export const MemberPortal: React.FC = () => {
   const [pronounOption, setPronounOption] = useState('He/Him');
   const [customSubject, setCustomSubject] = useState('');
   const [customObject, setCustomObject] = useState('');
+  const [biography, setBiography] = useState('');
   const [roles, setRoles] = useState<string[]>([]);
   const [isRolesModalOpen, setIsRolesModalOpen] = useState(false);
 
@@ -148,7 +151,7 @@ export const MemberPortal: React.FC = () => {
     }
   };
 
-  // Fetch live user profile and subscriber info
+  // Fetch and subscribe to live user profile and subscriber info
   useEffect(() => {
     if (!user) {
       navigate('/member/login', { replace: true });
@@ -156,58 +159,57 @@ export const MemberPortal: React.FC = () => {
     }
 
     setLoading(true);
-    getUserProfile(user.uid)
-      .then(async (data) => {
-        if (!data || !data.isRegistered) {
-          navigate('/member/register', { replace: true });
-          return;
+
+    const unsubscribe = subscribeUserProfile(user.uid, async (data) => {
+      if (!data || !data.isRegistered) {
+        navigate('/member/register', { replace: true });
+        return;
+      }
+
+      setProfile(data);
+      setFirstName(data['name-first'] || '');
+      setLastName(data['name-last'] || '');
+      setUsername(data.username || '');
+      setCommEmail(data['email-preferred'] || user.email || '');
+      setPhone(data.phone || '');
+      setProgram(data.program || '');
+      setYearOfStudy(data.year || '');
+      setBiography(data.biography || '');
+      setRoles(data.type || []);
+
+      // Parse pronouns
+      if (data.pronouns?.subject && data.pronouns?.object) {
+        const sub = data.pronouns.subject.toLowerCase();
+        const obj = data.pronouns.object.toLowerCase();
+        if (sub === 'he' && obj === 'him') setPronounOption('He/Him');
+        else if (sub === 'she' && obj === 'her') setPronounOption('She/Her');
+        else if (sub === 'they' && obj === 'them') setPronounOption('They/Them');
+        else {
+          setPronounOption('Custom');
+          setCustomSubject(data.pronouns.subject);
+          setCustomObject(data.pronouns.object);
         }
+      } else {
+        setPronounOption('Prefer not to say');
+      }
 
-        setProfile(data);
-        setFirstName(data['name-first'] || '');
-        setLastName(data['name-last'] || '');
-        setUsername(data.username || '');
-        setCommEmail(data['email-preferred'] || user.email || '');
-        setPhone(data.phone || '');
-        setProgram(data.program || '');
-        setYearOfStudy(data.year || '');
-        setRoles(data.type || []);
-
-        // Parse pronouns
-        if (data.pronouns?.subject && data.pronouns?.object) {
-          const sub = data.pronouns.subject.toLowerCase();
-          const obj = data.pronouns.object.toLowerCase();
-          if (sub === 'he' && obj === 'him') setPronounOption('He/Him');
-          else if (sub === 'she' && obj === 'her') setPronounOption('She/Her');
-          else if (sub === 'they' && obj === 'them') setPronounOption('They/Them');
-          else {
-            setPronounOption('Custom');
-            setCustomSubject(data.pronouns.subject);
-            setCustomObject(data.pronouns.object);
+      // Fetch mailing lists
+      const targetEmail = data['email-preferred'] || user.email || '';
+      if (targetEmail) {
+        getSubscriber(targetEmail).then((subDoc) => {
+          if (subDoc) {
+            setSubscriberLists(subDoc.lists || []);
           }
-        } else {
-          setPronounOption('Prefer not to say');
-        }
+        });
+      }
 
-        // Fetch mailing lists
-        const targetEmail = data['email-preferred'] || user.email || '';
-        if (targetEmail) {
-          getSubscriber(targetEmail).then((subDoc) => {
-            if (subDoc) {
-              setSubscriberLists(subDoc.lists || []);
-            }
-          });
-        }
+      // Fetch user payable bills from Firestore
+      await loadUserPayments(data, targetEmail);
 
-        // Fetch user payable bills from Firestore
-        await loadUserPayments(data, targetEmail);
+      setLoading(false);
+    });
 
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Failed to load profile:', err);
-        setLoading(false);
-      });
+    return () => unsubscribe();
   }, [user, navigate]);
 
   const handleLogout = async () => {
@@ -346,6 +348,7 @@ export const MemberPortal: React.FC = () => {
         program: program.trim(),
         year: yearOfStudy.trim(),
         type: safeRoles,
+        ...(profile.isExecutive ? { biography: biography.trim() } : {}),
       };
 
       await updateUserProfile(user.uid, updatedFields);
@@ -490,6 +493,20 @@ export const MemberPortal: React.FC = () => {
                 @{profile.username || 'member'}
               </p>
             </div>
+
+            {/* Executive Area Navigation Button */}
+            {profile.isExecutive && (
+              <button
+                type="button"
+                onClick={() => smoothNavigate('/executive/portal')}
+                className="btn-executive-portal group"
+                title="Enter Executive Portal"
+              >
+                <ShieldCheck className="w-4 h-4 text-[#0075A2] dark:text-[#53afd0] group-hover:scale-110 transition-transform" />
+                <span>Executive Area</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform opacity-70 group-hover:opacity-100" />
+              </button>
+            )}
           </div>
 
           {/* Status Banners */}
@@ -773,6 +790,27 @@ export const MemberPortal: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Executive Officer Biography Editing */}
+                  {profile.isExecutive && (
+                    <div className="form-group sm:col-span-2">
+                      <label className="form-label flex items-center justify-between" htmlFor="edit-bio">
+                        <span className="flex items-center gap-1.5 font-bold text-[#0075A2] dark:text-[#53afd0]">
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>Executive Officer Biography</span>
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-normal">Public executive profile bio</span>
+                      </label>
+                      <textarea
+                        id="edit-bio"
+                        rows={3}
+                        value={biography}
+                        onChange={(e) => setBiography(e.target.value)}
+                        placeholder="Your public executive biography and society background..."
+                        className="form-input text-xs"
+                      />
+                    </div>
+                  )}
+
                   <div className="flex justify-end gap-3 pt-4 border-t border-[rgba(28,36,76,0.15)] dark:border-[rgba(83,175,208,0.22)]">
                     <button
                       type="button"
@@ -836,6 +874,18 @@ export const MemberPortal: React.FC = () => {
                         : 'Prefer not to say'}
                     </span>
                   </div>
+
+                  {profile.isExecutive && (
+                    <div className="overview-field-item sm:col-span-2 bg-[#0075A2]/5 dark:bg-[#53afd0]/10 border border-[#0075A2]/20 dark:border-[#53afd0]/30 p-4 rounded-xl space-y-1">
+                      <div className="flex items-center gap-1.5 text-[#0075A2] dark:text-[#53afd0] font-bold text-xs">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>Executive Officer Biography</span>
+                      </div>
+                      <p className="text-xs text-slate-700 dark:text-slate-300 italic leading-relaxed">
+                        {profile.biography || 'No executive biography written yet. Click "Edit Profile" to write one.'}
+                      </p>
+                    </div>
+                  )}
 
                   <div className="overview-field-item sm:col-span-2">
                     <span className="overview-field-label mb-1">Participation Roles</span>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Search, X, Building2, MapPin, Check } from 'lucide-react';
 import { getOrganizations, type OrganizationDoc } from '@/services/userService';
+import { getCountryFlag } from '@/utils/countries';
 
 interface OrganizationPickerModalProps {
   isOpen: boolean;
@@ -63,6 +64,12 @@ export const OrganizationPickerModal: React.FC<OrganizationPickerModalProps> = (
     const q = searchQuery.toLowerCase().trim();
 
     return organizations.filter((org) => {
+      // Exclude UCDS itself from the external pickable organizations list
+      const isUcds =
+        org.id === 'university-of-calgary-debate-society' ||
+        (org.name && org.name.toLowerCase().trim() === 'university of calgary debate society');
+      if (isUcds) return false;
+
       // Country Filter
       if (selectedCountry !== 'all') {
         const country = (org.location?.country || '').toLowerCase();
@@ -126,7 +133,7 @@ export const OrganizationPickerModal: React.FC<OrganizationPickerModalProps> = (
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search by name or institution..."
+              placeholder="Search by name, country, province, or institution..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-sm rounded-xl border border-[rgba(28,36,76,0.15)] dark:border-[rgba(83,175,208,0.2)] bg-white dark:bg-[#15162C] text-[#101426] dark:text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#0075A2]"
@@ -180,7 +187,7 @@ export const OrganizationPickerModal: React.FC<OrganizationPickerModalProps> = (
                       : 'bg-[rgba(28,36,76,0.06)] dark:bg-[rgba(83,175,208,0.1)] text-slate-700 dark:text-slate-300 hover:bg-[rgba(28,36,76,0.12)]'
                   }`}
                 >
-                  {country}
+                  {getCountryFlag(country)} {country}
                 </button>
               ))}
           </div>
@@ -188,6 +195,38 @@ export const OrganizationPickerModal: React.FC<OrganizationPickerModalProps> = (
 
         {/* Organizations List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-2 max-h-[50vh]">
+          {/* Option: Independent / Unaffiliated */}
+          <div
+            onClick={() => {
+              onSelect('Independent');
+              onClose();
+            }}
+            className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+              selectedOrg.toLowerCase() === 'independent' || !selectedOrg
+                ? 'bg-[#0075A2]/10 border-[#0075A2] dark:bg-[#53afd0]/20 dark:border-[#53afd0]'
+                : 'border-[rgba(28,36,76,0.08)] dark:border-[rgba(83,175,208,0.12)] hover:border-[#0075A2] dark:hover:border-[#53afd0] bg-white dark:bg-[#15162C]'
+            }`}
+          >
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm text-[#101426] dark:text-[#F6F6F6]">
+                  Independent
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 font-bold">
+                  Unaffiliated
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Not affiliated with any specific debate club or university team.
+              </p>
+            </div>
+
+            {(selectedOrg.toLowerCase() === 'independent' || !selectedOrg) && (
+              <div className="w-6 h-6 rounded-full bg-[#0075A2] text-white flex items-center justify-center">
+                <Check className="w-4 h-4" />
+              </div>
+            )}
+          </div>
           {loading ? (
             <div className="py-12 text-center text-slate-400 font-semibold text-sm">
               Loading organizations directory...

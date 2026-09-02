@@ -1702,5 +1702,44 @@
   color: #cbd5e1 !important;
 }
 
+/* Executive Portal Entrance Button on Title Card */
+.btn-executive-portal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 12px;
+  background: rgba(0, 117, 162, 0.08);
+  border: 1.5px solid rgba(0, 117, 162, 0.35);
+  color: #1C244C;
+  font-weight: 800;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 117, 162, 0.08);
+}
+
+.dark .btn-executive-portal {
+  background: rgba(83, 175, 208, 0.12);
+  border-color: rgba(83, 175, 208, 0.4);
+  color: #F6F6F6;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.btn-executive-portal:hover {
+  transform: translateY(-2px);
+  background: #1C244C;
+  border-color: #1C244C;
+  color: #F6F6F6;
+  box-shadow: 0 6px 20px rgba(28, 36, 76, 0.25);
+}
+
+.dark .btn-executive-portal:hover {
+  background: #0075A2;
+  border-color: #53afd0;
+  color: #F6F6F6;
+  box-shadow: 0 6px 22px rgba(83, 175, 208, 0.4);
+}
+
 
 

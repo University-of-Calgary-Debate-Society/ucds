@@ -3,20 +3,21 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 const getPageTitle = (pathname: string): string => {
-  if (pathname === '/' || pathname === '') return 'HOME';
-  if (pathname.startsWith('/connect/social')) return 'SOCIALS';
-  if (pathname.startsWith('/connect/contact')) return 'CONTACT';
-  if (pathname.startsWith('/member/portal')) return 'PORTAL';
-  if (pathname.startsWith('/member/login')) return 'LOGIN';
-  if (pathname.startsWith('/member/register')) return 'REGISTER';
-  if (pathname.startsWith('/member/unsubscribe')) return 'MAILING';
-  if (pathname.startsWith('/executive')) return 'EXECUTIVE';
-  if (pathname.startsWith('/about')) return 'ABOUT';
-  if (pathname.startsWith('/events')) return 'EVENTS';
-  if (pathname.startsWith('/communications')) return 'COMMS';
-  if (pathname.startsWith('/resources')) return 'RESOURCES';
+  const normalized = pathname.replace(/\/+$/, '') || '/';
+  if (normalized === '/' || normalized === '/home') return 'HOME';
+  if (normalized.startsWith('/connect/social')) return 'SOCIALS';
+  if (normalized.startsWith('/connect/contact')) return 'CONTACT';
+  if (normalized.startsWith('/member/portal')) return 'PORTAL';
+  if (normalized.startsWith('/member/login')) return 'LOGIN';
+  if (normalized.startsWith('/member/register')) return 'REGISTER';
+  if (normalized.startsWith('/member/unsubscribe')) return 'MAILING';
+  if (normalized.startsWith('/executive')) return 'EXECUTIVE';
+  if (normalized.startsWith('/about')) return 'ABOUT';
+  if (normalized.startsWith('/events')) return 'EVENTS';
+  if (normalized.startsWith('/communications')) return 'COMMS';
+  if (normalized.startsWith('/resources')) return 'RESOURCES';
 
-  const segment = pathname.split('/').filter(Boolean).pop() || 'UCDS';
+  const segment = normalized.split('/').filter(Boolean).pop() || 'UCDS';
   return segment.toUpperCase().replace(/-/g, ' ');
 };
 
@@ -28,48 +29,90 @@ export const MiniScrollVisualizer: React.FC = () => {
 
   const trackRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
-  const rafIdRef = useRef<number | null>(null);
   const location = useLocation();
 
   const TRACK_HEIGHT = 160; // px
+  const normalizedPath = location.pathname.replace(/\/+$/, '') || '/';
+  const isHomePage = normalizedPath === '/' || normalizedPath === '/home';
 
-  // High-performance scroll calculation throttled by requestAnimationFrame
+  // Robust, cross-browser scroll calculation
   const updateScrollMetrics = useCallback(() => {
-    if (rafIdRef.current) return;
+    if (isHomePage) {
+      setIsScrollable(false);
+      return;
+    }
 
-    rafIdRef.current = requestAnimationFrame(() => {
-      rafIdRef.current = null;
-      const docElem = document.documentElement;
-      const scrollHeight = docElem.scrollHeight;
-      const clientHeight = window.innerHeight;
-      const scrollTop = window.scrollY || docElem.scrollTop;
+    const docElem = document.documentElement;
+    const body = document.body;
+    const scrollHeight = Math.max(
+      docElem.scrollHeight,
+      body ? body.scrollHeight : 0,
+      docElem.offsetHeight,
+      body ? body.offsetHeight : 0
+    );
+    const clientHeight = window.innerHeight || docElem.clientHeight;
+    const scrollTop = window.scrollY || window.pageYOffset || docElem.scrollTop || (body ? body.scrollTop : 0);
 
-      const maxScroll = scrollHeight - clientHeight;
-      const scrollable = maxScroll > 30;
+    const maxScroll = Math.max(scrollHeight - clientHeight, 0);
+    const scrollable = maxScroll > 15;
 
-      setIsScrollable(scrollable);
+    setIsScrollable(scrollable);
 
-      if (scrollable) {
-        const progress = Math.min(Math.max(scrollTop / maxScroll, 0), 1);
-        setScrollProgress(progress);
-        setViewportRatio(Math.min(Math.max(clientHeight / scrollHeight, 0.12), 0.5));
-      } else {
-        setScrollProgress(0);
-      }
-    });
-  }, []);
+    if (scrollable) {
+      const progress = Math.min(Math.max(scrollTop / maxScroll, 0), 1);
+      setScrollProgress(progress);
+      setViewportRatio(Math.min(Math.max(clientHeight / scrollHeight, 0.15), 0.55));
+    } else {
+      setScrollProgress(0);
+    }
+  }, [isHomePage]);
 
   useEffect(() => {
+    if (isHomePage) {
+      setIsScrollable(false);
+      return;
+    }
+
+    // Execute immediately and across subsequent animation frames / load events
     updateScrollMetrics();
-    window.addEventListener('scroll', updateScrollMetrics, { passive: true });
-    window.addEventListener('resize', updateScrollMetrics, { passive: true });
+
+    const t1 = setTimeout(updateScrollMetrics, 30);
+    const t2 = setTimeout(updateScrollMetrics, 100);
+    const t3 = setTimeout(updateScrollMetrics, 300);
+    const t4 = setTimeout(updateScrollMetrics, 600);
+    const t5 = setTimeout(updateScrollMetrics, 1200);
+
+    const handleScroll = () => {
+      requestAnimationFrame(updateScrollMetrics);
+    };
+
+    const handleResize = () => {
+      requestAnimationFrame(updateScrollMetrics);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize, { passive: true });
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        updateScrollMetrics();
+      });
+      if (document.body) resizeObserver.observe(document.body);
+      if (document.documentElement) resizeObserver.observe(document.documentElement);
+    }
 
     return () => {
-      window.removeEventListener('scroll', updateScrollMetrics);
-      window.removeEventListener('resize', updateScrollMetrics);
-      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+      clearTimeout(t5);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+      if (resizeObserver) resizeObserver.disconnect();
     };
-  }, [updateScrollMetrics, location.pathname]);
+  }, [updateScrollMetrics, location.pathname, isHomePage]);
 
   // Jump to scroll position based on click or drag on the mini track
   const handleScrollToY = useCallback((clientY: number) => {
@@ -79,7 +122,9 @@ export const MiniScrollVisualizer: React.FC = () => {
     const percentage = Math.min(Math.max(clickY / rect.height, 0), 1);
 
     const docElem = document.documentElement;
-    const maxScroll = docElem.scrollHeight - window.innerHeight;
+    const body = document.body;
+    const scrollHeight = Math.max(docElem.scrollHeight, body ? body.scrollHeight : 0);
+    const maxScroll = Math.max(scrollHeight - window.innerHeight, 0);
     const targetScroll = percentage * maxScroll;
 
     window.scrollTo({
@@ -115,10 +160,14 @@ export const MiniScrollVisualizer: React.FC = () => {
 
   const scrollToBottom = (e: React.MouseEvent) => {
     e.stopPropagation();
-    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+    const docElem = document.documentElement;
+    const body = document.body;
+    const scrollHeight = Math.max(docElem.scrollHeight, body ? body.scrollHeight : 0);
+    window.scrollTo({ top: scrollHeight, behavior: 'smooth' });
   };
 
-  if (!isScrollable) return null;
+  // Permanently hidden on homepage
+  if (isHomePage) return null;
 
   // Thumb sizing & positioning
   const thumbHeight = Math.max(TRACK_HEIGHT * viewportRatio, 24);
@@ -128,8 +177,12 @@ export const MiniScrollVisualizer: React.FC = () => {
 
   return (
     <div
-      className={`fixed right-2.5 top-1/2 -translate-y-1/2 z-[99990] flex flex-col items-center gap-1.5 select-none transition-opacity duration-300 ${
-        isHovered ? 'opacity-100' : 'opacity-60 hover:opacity-100'
+      className={`fixed right-3 top-1/2 -translate-y-1/2 z-[99990] flex flex-col items-center gap-1.5 select-none transition-all duration-300 ${
+        isScrollable
+          ? isHovered
+            ? 'opacity-100 scale-100 pointer-events-auto'
+            : 'opacity-80 hover:opacity-100 scale-100 pointer-events-auto'
+          : 'opacity-0 scale-90 pointer-events-none'
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -138,7 +191,7 @@ export const MiniScrollVisualizer: React.FC = () => {
     >
       {/* Monochrome Vertical Characters from Top to Bottom */}
       <div
-        className="flex flex-col items-center select-none pointer-events-none mb-1 text-[8.5px] font-sans font-black tracking-widest text-black dark:text-white opacity-90"
+        className="flex flex-col items-center select-none pointer-events-none mb-1 text-[9px] font-sans font-black tracking-widest text-[#1C244C] dark:text-[#F6F6F6] drop-shadow-sm"
         aria-hidden="true"
       >
         {pageTitle.split('').map((char, i) => (
@@ -154,9 +207,9 @@ export const MiniScrollVisualizer: React.FC = () => {
         onClick={scrollToTop}
         title="Scroll to top"
         aria-label="Scroll to top"
-        className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 ${
+        className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${
           isHovered
-            ? 'opacity-90 scale-100 bg-white/90 dark:bg-black/90 text-black dark:text-white shadow-sm hover:scale-110 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black'
+            ? 'opacity-100 scale-100 bg-white dark:bg-black text-black dark:text-white shadow-md hover:scale-110 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black border border-black/15 dark:border-white/20'
             : 'opacity-0 scale-75 pointer-events-none'
         }`}
       >
@@ -164,17 +217,17 @@ export const MiniScrollVisualizer: React.FC = () => {
       </button>
 
       {/* Monochrome Mini Scrollbar Rail & Steady Thumb */}
-      <div className="relative flex items-center justify-center">
+      <div className="relative flex items-center justify-center p-0.5">
         {/* Steady Background Glass Track */}
         <div
           ref={trackRef}
           onMouseDown={handleTrackMouseDown}
           style={{ height: `${TRACK_HEIGHT}px` }}
-          className="cursor-pointer rounded-full relative w-1.5 bg-black/20 dark:bg-white/20 backdrop-blur-sm"
+          className="cursor-pointer rounded-full relative w-2 bg-black/25 dark:bg-white/25 border border-black/10 dark:border-white/15 backdrop-blur-md shadow-inner"
         >
-          {/* Steady Black/White Thumb */}
+          {/* Steady High-Contrast Black/White Thumb */}
           <div
-            className="absolute left-1/2 -translate-x-1/2 rounded-full shadow-sm bg-black dark:bg-white w-1.5"
+            className="absolute left-1/2 -translate-x-1/2 rounded-full shadow-md bg-black dark:bg-white w-2"
             style={{
               top: `${thumbTop}px`,
               height: `${thumbHeight}px`,
@@ -189,9 +242,9 @@ export const MiniScrollVisualizer: React.FC = () => {
         onClick={scrollToBottom}
         title="Scroll to bottom"
         aria-label="Scroll to bottom"
-        className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 ${
+        className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${
           isHovered
-            ? 'opacity-90 scale-100 bg-white/90 dark:bg-black/90 text-black dark:text-white shadow-sm hover:scale-110 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black'
+            ? 'opacity-100 scale-100 bg-white dark:bg-black text-black dark:text-white shadow-md hover:scale-110 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black border border-black/15 dark:border-white/20'
             : 'opacity-0 scale-75 pointer-events-none'
         }`}
       >

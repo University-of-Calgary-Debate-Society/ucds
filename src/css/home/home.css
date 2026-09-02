@@ -132,8 +132,70 @@
   box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.75), 0 0 45px 5px rgba(83, 175, 208, 0.25);
 }
 
+/* Watermark Floating Club Logo Behind Text (Fades in after all other elements have animated in) */
+.hero-logo-watermark-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(360px, 60%);
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: heroLogoFadeInAfterAll 1.4s cubic-bezier(0.16, 1, 0.3, 1) 1.6s forwards;
+}
+
+.hero-logo-watermark-floater {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: heroLogoVerticalFloat 5.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+.hero-logo-watermark-img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.28;
+  filter: brightness(0.48) contrast(1.15);
+  transition: opacity 0.4s ease, filter 0.4s ease;
+}
+
+.dark .hero-logo-watermark-img {
+  opacity: 0.35;
+  filter: brightness(0.38) contrast(1.25) drop-shadow(0 0 25px rgba(0, 0, 0, 0.9));
+}
+
+@keyframes heroLogoFadeInAfterAll {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes heroLogoVerticalFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
 /* Part 1 Title: Rounded Rectangle Box with Blur & ~50% Transparency */
 .hero-title-badge-container {
+  position: relative;
+  z-index: 5;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -195,6 +257,8 @@
 
 /* Part 2 Title: Debate Society */
 .hero-title-part2 {
+  position: relative;
+  z-index: 5;
   font-family: 'Outfit', sans-serif;
   font-size: clamp(3.2rem, 8vw, 6rem);
   font-weight: 900;
@@ -651,10 +715,16 @@
 .reduce-motion .hero-title-badge-container,
 .reduce-motion .hero-title-part2,
 .reduce-motion .hero-buttons-group,
-.reduce-motion .floating-badge-anchor {
+.reduce-motion .floating-badge-anchor,
+.reduce-motion .hero-logo-watermark-wrapper,
+.reduce-motion .hero-logo-watermark-floater {
   opacity: 1 !important;
   transform: none !important;
   animation: none !important;
+}
+
+.reduce-motion .hero-logo-watermark-wrapper {
+  transform: translate(-50%, -50%) !important;
 }
 
 .reduce-motion .badge-canada {

@@ -6,6 +6,7 @@
 @import "./home/home.css";
 @import "./member/member.css";
 @import "./connect/socials.css";
+@import "./executive/executive.css";
 
 @layer base {
   :root {
@@ -55,55 +56,75 @@ h1, h2, h3, .font-title {
   font-family: 'Cinzel', serif;
 }
 
-/* Mini scrollbar visualization - Hide default OS scrollbar on main viewport */
+/* Mini scrollbar visualization - Hide default OS/browser scrollbar completely on main viewport */
 html,
-body {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+body,
+#root {
+  overflow-x: clip;
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
 }
 
 html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-  width: 0;
-  height: 0;
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }
 
-/* Global Ultra-Mini Scrollbars for inner scrollable containers */
-* {
+/* Global Ultra-Mini Scrollbars for inner scrollable containers only (tables, dropdowns, modal content) */
+.overflow-y-auto,
+.overflow-x-auto,
+.exec-table-wrapper,
+.exec-card,
+.custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 117, 162, 0.35) transparent;
 }
 
-.dark * {
+.dark .overflow-y-auto,
+.dark .overflow-x-auto,
+.dark .exec-table-wrapper,
+.dark .exec-card,
+.dark .custom-scrollbar {
   scrollbar-color: rgba(83, 175, 208, 0.35) transparent;
 }
 
-::-webkit-scrollbar {
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.exec-table-wrapper::-webkit-scrollbar,
+.exec-card::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
 
-::-webkit-scrollbar-track {
+.overflow-y-auto::-webkit-scrollbar-track,
+.overflow-x-auto::-webkit-scrollbar-track,
+.exec-table-wrapper::-webkit-scrollbar-track,
+.exec-card::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
+.overflow-y-auto::-webkit-scrollbar-thumb,
+.overflow-x-auto::-webkit-scrollbar-thumb,
+.exec-table-wrapper::-webkit-scrollbar-thumb,
+.exec-card::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(28, 36, 76, 0.2);
   border-radius: 9999px;
   transition: background 0.2s ease;
 }
 
-.dark ::-webkit-scrollbar-thumb {
+.dark .overflow-y-auto::-webkit-scrollbar-thumb,
+.dark .overflow-x-auto::-webkit-scrollbar-thumb,
+.dark .exec-table-wrapper::-webkit-scrollbar-thumb,
+.dark .exec-card::-webkit-scrollbar-thumb,
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(83, 175, 208, 0.25);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #0075A2;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #53afd0;
 }
 
 /* Glassmorphism utilities */
@@ -389,8 +410,47 @@ header,
   }
 }
 
+/* Native View Transitions API (Hardware-Accelerated GPU Cross-Dissolve) */
+::view-transition-old(root) {
+  animation: 200ms cubic-bezier(0.4, 0, 0.2, 1) both vtFadeOut;
+}
+
+::view-transition-new(root) {
+  animation: 260ms cubic-bezier(0.16, 1, 0.3, 1) both vtFadeIn;
+}
+
+@keyframes vtFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vtFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Header & Floating Navigation Isolation during View Transitions (No flicker, persistent anchoring) */
+.site-header {
+  view-transition-name: site-header;
+}
+
+.floating-nav-container {
+  view-transition-name: floating-navbar;
+}
+
 /* Respect user preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root),
   .page-transition-wrapper,
   .animate-pageEnter,
   .animate-viewFadeIn,

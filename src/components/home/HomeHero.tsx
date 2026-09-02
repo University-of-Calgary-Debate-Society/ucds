@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight, Info, Sparkles } from 'lucide-react';
 import { RotatingBackground } from './RotatingBackground';
 import { getAssetUrl } from '@/utils/assetUrl';
+import { useSmoothNavigate } from '@/utils/navigation';
 
 export const HomeHero: React.FC = () => {
+  const smoothNavigate = useSmoothNavigate();
   // Speech bubbles state for interactive badges
   const [rexSpeech, setRexSpeech] = useState<string | null>(null);
   const [rexIndex, setRexIndex] = useState(0);
@@ -93,6 +95,17 @@ export const HomeHero: React.FC = () => {
       <div className="hero-content-wrapper">
         {/* Main Glass Title Card with Floating Badges (Unblurred & Crisp) */}
         <div className="hero-glass-card">
+          {/* Watermark Floating Club Logo Behind Text (Fades in after all elements animate in) */}
+          <div className="hero-logo-watermark-wrapper" aria-hidden="true">
+            <div className="hero-logo-watermark-floater">
+              <img
+                src={getAssetUrl('images/seo/logo_normal.png')}
+                alt=""
+                className="hero-logo-watermark-img"
+              />
+            </div>
+          </div>
+
           {/* Floating & Interactive Badges around title card */}
 
           {/* Badge 1: Canada Flag (top-right) */}
@@ -186,17 +199,25 @@ export const HomeHero: React.FC = () => {
         {/* Separated Action Buttons Group below the Title Card */}
         <div className="hero-buttons-group">
           {/* Highlighted Primary CTA: Join */}
-          <a href="/member/register" className="btn-join-primary group">
+          <button
+            type="button"
+            onClick={() => smoothNavigate('/member/register')}
+            className="btn-join-primary group cursor-pointer"
+          >
             <Sparkles className="w-4 h-4 text-[#53afd0] group-hover:rotate-12 transition-transform" />
             <span>Join</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </a>
+          </button>
 
           {/* Secondary CTA: About */}
-          <a href="/about/history" className="btn-about-secondary group">
+          <button
+            type="button"
+            onClick={() => smoothNavigate('/about/history')}
+            className="btn-about-secondary group cursor-pointer"
+          >
             <Info className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" />
             <span>About Us</span>
-          </a>
+          </button>
         </div>
       </div>
     </div>

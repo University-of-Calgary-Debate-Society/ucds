@@ -10,7 +10,10 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '@/lib/firebase';
+import { clientCache } from '@/utils/clientCache';
 import type { UserProfile } from './userService';
+
+export const PAYMENTS_CACHE_KEY = 'all_payment_bills';
 
 export interface PaymentBill {
   id: string; // Document name, e.g. 'membership-fee-2627' or '_default'
@@ -336,9 +339,9 @@ export async function getUserPayableItems(
   const isExecutive = Boolean(profile?.isExecutive);
   const isUCDS = Boolean(profile?.isUCDS);
 
-  let allBills: PaymentBill[] = [];
+  let allBills: PaymentBill[] = clientCache.get<PaymentBill[]>(PAYMENTS_CACHE_KEY) || [];
 
-  if (db && isFirebaseConfigured()) {
+  if (allBills.length === 0 && db && isFirebaseConfigured()) {
     try {
       const snap = await getDocs(collection(db, 'Payments'));
       if (!snap.empty) {
@@ -364,6 +367,8 @@ export async function getUserPayableItems(
               'time-deadline': data['time-deadline'] || null,
             };
           });
+
+        clientCache.set(PAYMENTS_CACHE_KEY, allBills, 10 * 60 * 1000);
       }
     } catch (err) {
       console.warn('Payments fetch notice, falling back to local defaults:', err);

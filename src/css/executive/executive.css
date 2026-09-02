@@ -1,0 +1,560 @@
+/* Executive Portal & Sub-Pages Styling - src/css/executive/executive.css */
+
+.executive-page-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #F6F6F6;
+  color: #1C244C;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  padding: 0;
+}
+
+.dark .executive-page-container {
+  background-color: #15162C;
+  color: #F6F6F6;
+}
+
+/* Minimalist Executive Top Navigation Header */
+.executive-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  height: 72px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1.5px solid rgba(28, 36, 76, 0.12);
+  box-shadow: 0 4px 20px rgba(28, 36, 76, 0.05);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dark .executive-header {
+  background: rgba(21, 22, 44, 0.85);
+  border-bottom: 1.5px solid rgba(83, 175, 208, 0.2);
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
+}
+
+.executive-header-inner {
+  width: 100%;
+  height: 100%;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.executive-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  background: rgba(28, 36, 76, 0.06);
+  border: 1.5px solid rgba(28, 36, 76, 0.14);
+  color: #1C244C;
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
+}
+
+.dark .executive-brand-badge {
+  background: rgba(83, 175, 208, 0.1);
+  border-color: rgba(83, 175, 208, 0.25);
+  color: #53afd0;
+}
+
+/* Member Portal Button in Executive Header */
+.btn-exec-return {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.05rem;
+  border-radius: 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: #FFFFFF;
+  color: #1C244C;
+  border: 1.5px solid rgba(28, 36, 76, 0.18);
+  box-shadow: 0 2px 8px rgba(28, 36, 76, 0.08);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.25s ease,
+              border-color 0.25s ease,
+              color 0.25s ease;
+}
+
+.dark .btn-exec-return {
+  background: rgba(21, 22, 44, 0.9);
+  color: #F6F6F6;
+  border: 1.5px solid rgba(83, 175, 208, 0.3);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+.btn-exec-return:hover {
+  background: #1C244C;
+  color: #F6F6F6;
+  border-color: #1C244C;
+  transform: translate3d(0, -2px, 0);
+  box-shadow: 0 8px 20px -3px rgba(28, 36, 76, 0.3), 0 2px 6px rgba(28, 36, 76, 0.08);
+}
+
+.dark .btn-exec-return:hover {
+  background: #0075A2;
+  color: #FFFFFF;
+  border-color: #53afd0;
+  transform: translate3d(0, -2px, 0);
+  box-shadow: 0 8px 22px -3px rgba(0, 117, 162, 0.45), 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.btn-exec-return:active {
+  transform: translate3d(0, 0, 0) scale(0.97);
+}
+
+/* Executive Layout with Collapsible Left Sidebar */
+.executive-layout-body {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  min-height: calc(100vh - 72px);
+  position: relative;
+}
+
+.executive-sidebar {
+  position: sticky;
+  top: 72px;
+  height: calc(100vh - 72px);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1.5px solid rgba(28, 36, 76, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(0.6rem, 1.5vh, 1rem) 0.55rem;
+  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
+  z-index: 40;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.dark .executive-sidebar {
+  background: rgba(21, 22, 44, 0.85);
+  border-right-color: rgba(83, 175, 208, 0.2);
+}
+
+.executive-sidebar.expanded {
+  width: clamp(200px, 16vw, 235px);
+}
+
+.executive-sidebar.collapsed {
+  width: clamp(56px, 5vw, 68px);
+}
+
+.executive-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.2rem, 0.85vh, 0.45rem);
+  width: 100%;
+}
+
+.executive-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: clamp(0.45rem, 1vh, 0.65rem) clamp(0.5rem, 0.8vw, 0.85rem);
+  border-radius: 12px;
+  font-size: clamp(0.78rem, 1.1vh, 0.85rem);
+  font-weight: 700;
+  color: #1C244C;
+  opacity: 0.75;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.dark .executive-sidebar-link {
+  color: #F6F6F6;
+  opacity: 0.75;
+}
+
+.executive-sidebar.collapsed .executive-sidebar-link {
+  justify-content: center;
+  padding: clamp(0.45rem, 1vh, 0.65rem) 0;
+}
+
+.executive-sidebar-link:hover {
+  opacity: 1;
+  background: rgba(28, 36, 76, 0.06);
+  color: #0075A2;
+}
+
+.dark .executive-sidebar-link:hover {
+  background: rgba(83, 175, 208, 0.12);
+  color: #53afd0;
+}
+
+.executive-sidebar-link.active {
+  opacity: 1;
+  background: #1C244C;
+  color: #F6F6F6;
+  box-shadow: 0 4px 14px rgba(28, 36, 76, 0.18);
+}
+
+.dark .executive-sidebar-link.active {
+  background: #0075A2;
+  color: #F6F6F6;
+  box-shadow: 0 4px 16px rgba(0, 117, 162, 0.35);
+}
+
+.executive-sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.4rem, 0.9vh, 0.55rem);
+  border-radius: 10px;
+  border: 1px solid rgba(28, 36, 76, 0.15);
+  background: rgba(28, 36, 76, 0.04);
+  color: #1C244C;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.dark .executive-sidebar-toggle {
+  border-color: rgba(83, 175, 208, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+  color: #53afd0;
+}
+
+.executive-sidebar-toggle:hover {
+  background: rgba(28, 36, 76, 0.08);
+}
+
+.dark .executive-sidebar-toggle:hover {
+  background: rgba(83, 175, 208, 0.15);
+}
+
+/* Main Content Wrapper */
+.executive-main-content {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  padding: 1.75rem 1.5rem 4rem;
+}
+
+/* Executive Card Container */
+.exec-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid rgba(28, 36, 76, 0.14);
+  border-radius: 20px;
+  padding: 1.75rem;
+  box-shadow: 0 10px 30px rgba(28, 36, 76, 0.06);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.dark .exec-card {
+  background: rgba(21, 22, 44, 0.85);
+  border-color: rgba(83, 175, 208, 0.25);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+}
+
+/* Executive Metric Banner Grid */
+.exec-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.exec-metric-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(28, 36, 76, 0.12);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.dark .exec-metric-card {
+  background: rgba(21, 22, 44, 0.8);
+  border-color: rgba(83, 175, 208, 0.2);
+}
+
+.exec-metric-card:hover {
+  transform: translateY(-3px);
+  border-color: #0075A2;
+  box-shadow: 0 8px 24px rgba(0, 117, 162, 0.15);
+}
+
+.dark .exec-metric-card:hover {
+  border-color: #53afd0;
+  box-shadow: 0 8px 24px rgba(83, 175, 208, 0.25);
+}
+
+.exec-metric-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 117, 162, 0.1);
+  color: #0075A2;
+  flex-shrink: 0;
+}
+
+.dark .exec-metric-icon {
+  background: rgba(83, 175, 208, 0.15);
+  color: #53afd0;
+}
+
+.exec-metric-value {
+  font-size: 1.65rem;
+  font-weight: 900;
+  font-family: 'Outfit', sans-serif;
+  line-height: 1.1;
+  color: #1C244C;
+}
+
+.dark .exec-metric-value {
+  color: #F6F6F6;
+}
+
+.exec-metric-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(28, 36, 76, 0.65);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.15rem;
+}
+
+.dark .exec-metric-label {
+  color: rgba(246, 246, 246, 0.65);
+}
+
+/* Section Quick Launcher Cards Grid */
+.exec-launcher-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.exec-launcher-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid rgba(28, 36, 76, 0.14);
+  border-radius: 18px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.25rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+}
+
+.dark .exec-launcher-card {
+  background: rgba(21, 22, 44, 0.85);
+  border-color: rgba(83, 175, 208, 0.22);
+}
+
+.exec-launcher-card:hover {
+  transform: translateY(-4px);
+  border-color: #0075A2;
+  box-shadow: 0 12px 30px rgba(0, 117, 162, 0.16);
+}
+
+.dark .exec-launcher-card:hover {
+  border-color: #53afd0;
+  box-shadow: 0 12px 32px rgba(83, 175, 208, 0.25);
+}
+
+.exec-launcher-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  color: #1C244C;
+}
+
+.dark .exec-launcher-title {
+  color: #F6F6F6;
+}
+
+.exec-launcher-desc {
+  font-size: 0.85rem;
+  color: rgba(28, 36, 76, 0.7);
+  line-height: 1.45;
+  margin-top: 0.35rem;
+}
+
+.dark .exec-launcher-desc {
+  color: rgba(246, 246, 246, 0.7);
+}
+
+/* Data Table Styles for Executive Lists */
+.exec-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(28, 36, 76, 0.1);
+}
+
+.dark .exec-table-wrapper {
+  border-color: rgba(83, 175, 208, 0.2);
+}
+
+.exec-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.exec-table th {
+  background: rgba(28, 36, 76, 0.05);
+  padding: 0.85rem 1.15rem;
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #1C244C;
+  border-bottom: 1px solid rgba(28, 36, 76, 0.1);
+}
+
+.dark .exec-table th {
+  background: rgba(255, 255, 255, 0.03);
+  color: #53afd0;
+  border-color: rgba(83, 175, 208, 0.2);
+}
+
+.exec-table td {
+  padding: 0.95rem 1.15rem;
+  border-bottom: 1px solid rgba(28, 36, 76, 0.06);
+  color: #1C244C;
+}
+
+.dark .exec-table td {
+  border-color: rgba(255, 255, 255, 0.05);
+  color: #F6F6F6;
+}
+
+.exec-table tr:hover td {
+  background: rgba(0, 117, 162, 0.04);
+}
+
+.dark .exec-table tr:hover td {
+  background: rgba(83, 175, 208, 0.06);
+}
+
+/* Executive Form Elements */
+.exec-input {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(28, 36, 76, 0.2);
+  color: #1C244C;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.exec-input.pl-9,
+.exec-input.pl-10,
+.exec-input.exec-search-input {
+  padding-left: 2.65rem !important;
+}
+
+.dark .exec-input {
+  background: rgba(21, 22, 44, 0.7);
+  border-color: rgba(83, 175, 208, 0.3);
+  color: #F6F6F6;
+}
+
+.exec-input:focus {
+  outline: none;
+  border-color: #0075A2;
+  box-shadow: 0 0 0 3px rgba(0, 117, 162, 0.2);
+}
+
+.dark .exec-input:focus {
+  border-color: #53afd0;
+  box-shadow: 0 0 0 3px rgba(83, 175, 208, 0.25);
+}
+
+/* Executive Action Buttons */
+.btn-exec-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 12px;
+  background: #1C244C;
+  color: #F6F6F6;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border: 1.5px solid #1C244C;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(28, 36, 76, 0.2);
+}
+
+.dark .btn-exec-primary {
+  background: #0075A2;
+  border-color: #53afd0;
+  color: #F6F6F6;
+  box-shadow: 0 4px 18px rgba(0, 117, 162, 0.35);
+}
+
+.btn-exec-primary:hover {
+  transform: translateY(-2px);
+  background: #0075A2;
+  border-color: #0075A2;
+  box-shadow: 0 6px 20px rgba(0, 117, 162, 0.3);
+}
+
+.dark .btn-exec-primary:hover {
+  background: #53afd0;
+  border-color: #F6F6F6;
+  color: #15162C;
+  box-shadow: 0 6px 22px rgba(83, 175, 208, 0.5);
+}
+
+/* Access Restriction Card */
+.exec-restricted-card {
+  max-width: 540px;
+  margin: 6rem auto;
+  text-align: center;
+  padding: 2.5rem;
+}
+
+/* Responsive Navigation Breakpoints */
+@media (max-width: 900px) {
+  .executive-header-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .executive-nav-tabs {
+    overflow-x: auto;
+    padding-bottom: 0.4rem;
+  }
+}

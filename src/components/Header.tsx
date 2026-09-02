@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { Settings, LogIn, UserCircle, LogOut, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { getSeasonalLogoInfo } from '@/utils/seasonalLogo';
 import { getAssetUrl } from '@/utils/assetUrl';
+import { useSmoothNavigate } from '@/utils/navigation';
 
 export const Header: React.FC = () => {
-  const navigate = useNavigate();
+  const smoothNavigate = useSmoothNavigate();
   const { user, logout } = useAuth();
   const { setIsSettingsOpen } = useAppSettings();
   const { logoUrl, altText, seasonName } = getSeasonalLogoInfo();
@@ -49,7 +49,7 @@ export const Header: React.FC = () => {
       setIsLoggingOut(true);
       await logout();
       setShowSignoutConfirm(false);
-      navigate('/member/login');
+      smoothNavigate('/member/login');
     } catch (err) {
       console.error('Error during logout:', err);
     } finally {
@@ -72,9 +72,10 @@ export const Header: React.FC = () => {
       </div>
 
       {/* Center: Centred Seasonal Club Logo */}
-      <Link
-        to="/"
-        className="header-center-logo"
+      <button
+        type="button"
+        onClick={() => smoothNavigate('/')}
+        className="header-center-logo cursor-pointer bg-transparent border-none"
         aria-label={`University of Calgary Debate Society (${seasonName})`}
         title={`UCDS - ${seasonName}`}
       >
@@ -86,20 +87,21 @@ export const Header: React.FC = () => {
             (e.target as HTMLImageElement).src = getAssetUrl('images/seo/logo_normal.png');
           }}
         />
-      </Link>
+      </button>
 
       {/* Right: Login Icon / Logout & Portal Buttons */}
       <div className="header-right">
         {user ? (
           <div className="flex items-center gap-2">
-            <Link
-              to="/member/portal"
-              className="btn-cogwheel"
+            <button
+              type="button"
+              onClick={() => smoothNavigate('/member/portal')}
+              className="btn-cogwheel cursor-pointer"
               title="Member Portal"
               aria-label="Member Portal"
             >
               <UserCircle className="w-5 h-5 text-[#0075A2] dark:text-[#53afd0]" />
-            </Link>
+            </button>
 
             {/* Top-Right Anchored Sign-Out Button & Confirmation Popover */}
             <div ref={signoutWrapperRef} className="signout-popover-wrapper">
@@ -157,14 +159,15 @@ export const Header: React.FC = () => {
             </div>
           </div>
         ) : (
-          <Link
-            to="/member/login"
-            className="btn-cogwheel"
+          <button
+            type="button"
+            onClick={() => smoothNavigate('/member/login')}
+            className="btn-cogwheel cursor-pointer"
             title="Sign In"
             aria-label="Sign In"
           >
             <LogIn className="w-5 h-5 text-[#0075A2] dark:text-[#53afd0]" />
-          </Link>
+          </button>
         )}
       </div>
     </header>

@@ -9,6 +9,9 @@ import {
   limit,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '@/lib/firebase';
+import { clientCache } from '@/utils/clientCache';
+
+export const EVENTS_CACHE_KEY = 'debate_events';
 
 export interface DebateEvent {
   id: string;
@@ -52,9 +55,16 @@ export const DEMO_EVENTS: DebateEvent[] = [
 ];
 
 /**
- * Fetch list of debate events (from Firestore if configured, or returns demo data)
+ * Fetch list of debate events with client-side caching (from cache, Firestore, or demo data)
  */
-export async function getDebateEvents(): Promise<DebateEvent[]> {
+export async function getDebateEvents(forceRefresh = false): Promise<DebateEvent[]> {
+  if (!forceRefresh) {
+    const cached = clientCache.get<DebateEvent[]>(EVENTS_CACHE_KEY);
+    if (cached && Array.isArray(cached) && cached.length > 0) {
+      return cached;
+    }
+  }
+
   if (!db || !isFirebaseConfigured()) {
     return DEMO_EVENTS;
   }
@@ -65,13 +75,17 @@ export async function getDebateEvents(): Promise<DebateEvent[]> {
     const snapshot = await getDocs(q);
 
     if (snapshot.empty) {
+      clientCache.set(EVENTS_CACHE_KEY, DEMO_EVENTS, 10 * 60 * 1000);
       return DEMO_EVENTS;
     }
 
-    return snapshot.docs.map((docSnap) => ({
+    const fetched = snapshot.docs.map((docSnap) => ({
       id: docSnap.id,
       ...(docSnap.data() as Omit<DebateEvent, 'id'>),
     }));
+
+    clientCache.set(EVENTS_CACHE_KEY, fetched, 10 * 60 * 1000);
+    return fetched;
   } catch (error) {
     console.warn('Firestore fetch notice, using fallback data:', error);
     return DEMO_EVENTS;
@@ -79,7 +93,7 @@ export async function getDebateEvents(): Promise<DebateEvent[]> {
 }
 
 /**
- * Save or update a debate event in Firestore
+ * Save or update a debate event in Firestore and optimistically update local cache
  */
 export async function saveDebateEvent(event: DebateEvent): Promise<void> {
   if (!db || !isFirebaseConfigured()) {
@@ -88,10 +102,12 @@ export async function saveDebateEvent(event: DebateEvent): Promise<void> {
 
   const eventRef = doc(db, 'events', event.id);
   await setDoc(eventRef, event, { merge: true });
+
+  clientCache.addCollectionItem(EVENTS_CACHE_KEY, event);
 }
 
 /**
- * Delete a debate event from Firestore
+ * Delete a debate event from Firestore and remove from local cache
  */
 export async function removeDebateEvent(eventId: string): Promise<void> {
   if (!db || !isFirebaseConfigured()) {
@@ -100,4 +116,6 @@ export async function removeDebateEvent(eventId: string): Promise<void> {
 
   const eventRef = doc(db, 'events', eventId);
   await deleteDoc(eventRef);
+
+  clientCache.removeCollectionItem(EVENTS_CACHE_KEY, eventId);
 }

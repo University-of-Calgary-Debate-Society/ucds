@@ -9,6 +9,7 @@ import {
   ChevronRight,
   X,
 } from 'lucide-react';
+import { useSmoothNavigate } from '@/utils/navigation';
 
 interface SubcategoryItem {
   title: string;
@@ -66,7 +67,6 @@ const NAV_CATEGORIES: NavCategory[] = [
       { title: 'Member Login', href: '/member/login', desc: 'Sign in to access your portal' },
       { title: 'Join / Register', href: '/member/register', desc: 'Become an official member' },
       { title: 'Mailing Preferences', href: '/member/unsubscribe', desc: 'Manage or unsubscribe newsletters' },
-      { title: 'Executive Portal', href: '/executive/portal', desc: 'Restricted leadership portal' },
     ],
   },
   {
@@ -95,6 +95,7 @@ const NAV_CATEGORIES: NavCategory[] = [
 export const FloatingNavbar: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const smoothNavigate = useSmoothNavigate();
 
   // Close subcategories drawer when clicking outside
   useEffect(() => {
@@ -161,29 +162,48 @@ export const FloatingNavbar: React.FC = () => {
           </div>
 
           <div className="space-y-1">
-            {selectedCategoryObj.subcategories.map((sub, idx) => (
-              <div
-                key={sub.title}
-                className="subcategory-animated-item"
-                style={{ animationDelay: `${idx * 40}ms` }}
-              >
-                <a
-                  href={sub.href}
-                  className="subcategory-link group"
-                  onClick={() => setActiveCategory(null)}
+            {selectedCategoryObj.subcategories.map((sub, idx) => {
+              const isExternal = sub.href.startsWith('http://') || sub.href.startsWith('https://');
+
+              return (
+                <div
+                  key={sub.title}
+                  className="subcategory-animated-item"
+                  style={{ animationDelay: `${idx * 40}ms` }}
                 >
-                  <div>
-                    <div className="subcategory-title">
-                      {sub.title}
-                    </div>
-                    <div className="subcategory-desc">
-                      {sub.desc}
-                    </div>
-                  </div>
-                  <ChevronRight className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[#0075A2] dark:text-[#53afd0]" />
-                </a>
-              </div>
-            ))}
+                  {isExternal ? (
+                    <a
+                      href={sub.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="subcategory-link group"
+                      onClick={() => setActiveCategory(null)}
+                    >
+                      <div>
+                        <div className="subcategory-title">{sub.title}</div>
+                        <div className="subcategory-desc">{sub.desc}</div>
+                      </div>
+                      <ChevronRight className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[#0075A2] dark:text-[#53afd0]" />
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      className="subcategory-link group w-full text-left cursor-pointer"
+                      onClick={() => {
+                        setActiveCategory(null);
+                        smoothNavigate(sub.href);
+                      }}
+                    >
+                      <div>
+                        <div className="subcategory-title">{sub.title}</div>
+                        <div className="subcategory-desc">{sub.desc}</div>
+                      </div>
+                      <ChevronRight className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[#0075A2] dark:text-[#53afd0]" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

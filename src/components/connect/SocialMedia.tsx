@@ -164,9 +164,15 @@ export const SocialMedia: React.FC = () => {
           {/* Social Media Cards */}
           {socialCards.map((item, index) => {
             const floatDelay = `${(index * 0.45).toFixed(2)}s`;
+            const enterDelay = `${(0.06 + index * 0.08).toFixed(2)}s`;
 
             return (
-              <div key={item.key} className="social-row-centered" role="listitem">
+              <div
+                key={item.key}
+                className="social-row-centered social-row-enter"
+                style={{ animationDelay: enterDelay }}
+                role="listitem"
+              >
                 <div className="social-card">
                   {/* Clickable Free-Floating Icon (No surrounding boxes) */}
                   <a
@@ -215,7 +221,11 @@ export const SocialMedia: React.FC = () => {
           })}
 
           {/* Email Contact Card at Bottom */}
-          <div className="social-row-centered" role="listitem">
+          <div
+            className="social-row-centered social-row-enter"
+            style={{ animationDelay: `${(0.06 + socialCards.length * 0.08).toFixed(2)}s` }}
+            role="listitem"
+          >
             <div className="social-card">
               {/* Clickable Free-Floating Email Icon */}
               <a

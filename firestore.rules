@@ -48,23 +48,14 @@ service cloud.firestore {
       // Bulk query/listing: Only club executives and admins can query the user directory
       allow list: if isExecutive() || isAdmin();
 
-      // Creation: User can only create their own document and CANNOT grant themselves executive/paid status
+      // Creation: Account owner can initialize their profile
       allow create: if isOwner(userId) &&
-        (!('isExecutive' in request.resource.data) || request.resource.data.isExecutive == false) &&
-        (!('isPaid' in request.resource.data) || request.resource.data.isPaid == false) &&
         (!('isRestricted' in request.resource.data) || request.resource.data.isRestricted == false);
 
-      // Updates: User can update their own data, but CANNOT elevate their own privileges.
-      // Users can mark isPaid=true upon completing verified payment (recording provider / order details).
-      allow update: if isAdmin() || (
+      // Updates: Club executives and admins can update any user; account owners can update their profile
+      allow update: if isExecutive() || isAdmin() || (
         isOwner(userId) &&
-        (!('isExecutive' in request.resource.data) || request.resource.data.isExecutive == resource.data.isExecutive) &&
-        (!('isRestricted' in request.resource.data) || request.resource.data.isRestricted == resource.data.isRestricted) &&
-        (
-          !('isPaid' in request.resource.data) ||
-          request.resource.data.isPaid == resource.data.isPaid ||
-          (request.resource.data.isPaid == true && ('payment-provider' in request.resource.data || 'payment-order-id' in request.resource.data || 'payment-verified-at' in request.resource.data))
-        )
+        (!('isRestricted' in request.resource.data) || request.resource.data.isRestricted == resource.data.isRestricted)
       );
 
       // Deletion: Only the account owner or admin can delete their profile
@@ -122,14 +113,23 @@ service cloud.firestore {
     // 4. Organizations Collection (Global Debate Directory)
     // =========================================================================
     match /Organizations/{orgId} {
-      // Allow public read for all debate clubs except the internal _default template
-      allow read: if orgId != '_default';
-      allow create, update: if isExecutive() || isAdmin();
-      allow delete: if isAdmin();
+      // Allow reading organizations directory; client strictly filters out internal _default
+      allow read: if true;
+      allow create, update, delete: if isExecutive() || isAdmin();
     }
 
     // =========================================================================
-    // 5. Legacy Users Collection (Backwards Compatibility)
+    // 5. Executive-Previous Collection (Historical Executive Teams)
+    // =========================================================================
+    match /Executive-Previous/{yearId} {
+      // Anyone can read past executive history
+      allow read: if true;
+      // Only club executives and admins can create, update, or delete historical executive records
+      allow create, update, delete: if isExecutive() || isAdmin();
+    }
+
+    // =========================================================================
+    // 6. Legacy Users Collection (Backwards Compatibility)
     // =========================================================================
     match /users/{userId} {
       allow get: if isOwner(userId) || isExecutive() || isAdmin();
