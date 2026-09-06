@@ -180,8 +180,8 @@ export async function fetchAllInteracFromInbox(emailUser, appPassword) {
         buffer = '';
         step = 'SEARCH';
         console.log('[IMAP] Searching for ALL Interac messages in inbox...');
-        // Query both sender containing interac and subject containing interac
-        sendCmd('A03', 'SEARCH OR (FROM "interac") (SUBJECT "INTERAC")');
+        // Query for sender containing interac
+        sendCmd('A03', 'SEARCH (FROM "catch@payments.interac.ca")');
       } else if (step === 'SEARCH' && buffer.includes('A03 OK')) {
         const searchLine = buffer.split('\r\n').find((l) => l.startsWith('* SEARCH'));
         buffer = '';
