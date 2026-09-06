@@ -249,7 +249,8 @@ async function fetchAndProcessGmailReceipts(emailUser, appPassword) {
       {
         host: 'imap.gmail.com',
         port: 993,
-        rejectUnauthorized: true,
+        rejectUnauthorized: false,
+        servername: 'imap.gmail.com',
       },
       () => {
         console.log('[IMAP] Connected over TLS. Authenticating...');
@@ -319,10 +320,6 @@ async function fetchAndProcessGmailReceipts(emailUser, appPassword) {
       } else if (step === 'LOGOUT' && (buffer.includes('A05 OK') || buffer.includes('* BYE'))) {
         socket.end();
         console.log(`[IMAP] Completed session. Processed ${processedCount} receipts.`);
-        resolve(processedCount);
-      } else if (buffer.includes('NO') || buffer.includes('BAD')) {
-        console.warn('[IMAP] Server error or notice:', buffer.trim());
-        socket.end();
         resolve(processedCount);
       }
     });

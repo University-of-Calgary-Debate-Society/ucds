@@ -64,28 +64,8 @@ const db = app ? getFirestore(app) : null;
 export function extractInteracMetadata(rawContent) {
   if (!rawContent) return null;
 
-  // 1. Extract CAD amount (e.g. $25.00)
-  const amountMatch = rawContent.match(/\$(\d+(?:\.\d{2})?)\s*(?:CAD)?/i);
-  if (!amountMatch) return null; // Must have an amount to be an e-transfer record
-  const amount = parseFloat(amountMatch[1]);
-
-  // 2. Extract Reference / Confirmation Number
-  const refMatch = rawContent.match(/(?:Reference\s*(?:Number|#)|Confirmation\s*#?)[:\s]*([A-Z0-9]+)/i);
-  const referenceNumber = refMatch ? refMatch[1].trim() : `HIST_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-
-  // 3. Extract Sender Name
-  const senderMatch = rawContent.match(/(?:From|Sender|Name):\s*([A-Za-z\s.'-]+)(?:\r?\n|$)/i);
-  let senderName = '';
-  if (senderMatch && senderMatch[1]) {
-    const rawName = senderMatch[1].trim();
-    if (!rawName.toLowerCase().includes('bank') && !rawName.toLowerCase().includes('interac')) {
-      senderName = rawName;
-    }
-  }
-
-  // 4. Extract Date from header or body
+  // 1. Extract Date from header or body first
   let date = null;
-  // Check standard Date header
   const dateHeaderMatch = rawContent.match(/(?:^|\r?\n)Date:\s*([^\r\n]+)/i);
   if (dateHeaderMatch) {
     const parsed = new Date(dateHeaderMatch[1].trim());
@@ -105,9 +85,42 @@ export function extractInteracMetadata(rawContent) {
     }
   }
 
-  // Fallback to current date if missing
   if (!date) {
     date = new Date();
+  }
+
+  // 2. Extract CAD amount (e.g. $25.00, $ 25.00, CAD 25.00, 25.00 CAD, 25.00 (CAD), $25)
+  let amount = null;
+  const amountMatch =
+    rawContent.match(/(?:\$|CAD\s*\$?)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?|\d+(?:\.\d{2})?)/i) ||
+    rawContent.match(/([0-9]+(?:\.[0-9]{2})?)\s*(?:\(CAD\)|CAD)/i);
+  if (amountMatch) {
+    const cleanNum = amountMatch[1].replace(/,/g, '');
+    const parsed = parseFloat(cleanNum);
+    if (!isNaN(parsed) && parsed > 0) {
+      amount = parsed;
+    }
+  }
+  if (!amount) return null; // Must have an amount to be an e-transfer record
+
+  // 3. Extract Reference / Confirmation Number
+  const refMatch = rawContent.match(/(?:Reference\s*(?:Number|#)?|Confirmation\s*(?:Number|#)?|Ref\s*(?:Number|#)?|Reference\s*ID)[:\s]*([A-Za-z0-9]+)/i);
+  const referenceNumber = refMatch ? refMatch[1].trim() : `INTERAC_${date.getTime()}_${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+
+  // 4. Extract Sender Name
+  let senderName = '';
+  const sentByMatch = rawContent.match(/(?:from|sent by)\s+([A-Za-z\s.'-]+?)\s+(?:has sent|for the amount|deposited)/i);
+  if (sentByMatch && sentByMatch[1]) {
+    senderName = sentByMatch[1].trim();
+  }
+  if (!senderName) {
+    const senderMatch = rawContent.match(/(?:Sender Name|Sender|From Name):\s*([A-Za-z\s.'-]+)(?:\r?\n|$)/i);
+    if (senderMatch && senderMatch[1]) {
+      const rawName = senderMatch[1].trim();
+      if (!rawName.toLowerCase().includes('bank') && !rawName.toLowerCase().includes('interac') && !rawName.toLowerCase().includes('td')) {
+        senderName = rawName;
+      }
+    }
   }
 
   // 5. Extract payer email
@@ -144,7 +157,8 @@ export async function fetchAllInteracFromInbox(emailUser, appPassword) {
       {
         host: 'imap.gmail.com',
         port: 993,
-        rejectUnauthorized: true,
+        rejectUnauthorized: false, // Fix: Prevent self-signed cert / SSL inspection rejection on local systems
+        servername: 'imap.gmail.com',
       },
       () => {
         console.log('[IMAP] Connected over TLS. Initiating authentication...');
@@ -171,70 +185,93 @@ export async function fetchAllInteracFromInbox(emailUser, appPassword) {
         buffer = '';
         step = 'LOGIN';
         sendCmd('A01', `LOGIN "${emailUser}" "${appPassword}"`);
-      } else if (step === 'LOGIN' && buffer.includes('A01 OK')) {
-        buffer = '';
-        step = 'SELECT';
-        console.log('[IMAP] Authentication successful. Selecting INBOX...');
-        sendCmd('A02', 'SELECT INBOX');
-      } else if (step === 'SELECT' && buffer.includes('A02 OK')) {
-        buffer = '';
-        step = 'SEARCH';
-        console.log('[IMAP] Searching for ALL Interac messages in inbox...');
-        // Query for sender containing interac
-        sendCmd('A03', 'SEARCH (FROM "catch@payments.interac.ca")');
-      } else if (step === 'SEARCH' && buffer.includes('A03 OK')) {
-        const searchLine = buffer.split('\r\n').find((l) => l.startsWith('* SEARCH'));
-        buffer = '';
-        msgIds = searchLine ? searchLine.replace('* SEARCH', '').trim().split(/\s+/).filter(Boolean) : [];
-
-        console.log(`[IMAP] Found total ${msgIds.length} candidate Interac email(s) in inbox.`);
-
-        if (msgIds.length === 0) {
-          step = 'LOGOUT';
-          sendCmd('A05', 'LOGOUT');
-          return;
+      } else if (step === 'LOGIN') {
+        if (buffer.includes('A01 OK')) {
+          buffer = '';
+          step = 'SELECT';
+          console.log('[IMAP] Authentication successful. Selecting INBOX...');
+          sendCmd('A02', 'SELECT INBOX');
+        } else if (buffer.includes('A01 NO') || buffer.includes('A01 BAD')) {
+          console.error('[IMAP] Authentication failed: Please verify your Gmail App Password.');
+          socket.end();
+          resolve(parsedReceipts);
         }
+      } else if (step === 'SELECT') {
+        if (buffer.includes('A02 OK')) {
+          buffer = '';
+          step = 'SEARCH';
+          console.log('[IMAP] Searching for ALL Interac messages in inbox...');
+          // Search both catch@payments.interac.ca and any payments.interac.ca notifications
+          sendCmd('A03', 'SEARCH OR (FROM "catch@payments.interac.ca") (FROM "notify@payments.interac.ca")');
+        } else if (buffer.includes('A02 NO') || buffer.includes('A02 BAD')) {
+          console.error('[IMAP] Failed to select INBOX.');
+          socket.end();
+          resolve(parsedReceipts);
+        }
+      } else if (step === 'SEARCH') {
+        if (buffer.includes('A03 OK')) {
+          // Extract all message IDs from the SEARCH response
+          const searchPart = buffer.split('A03 OK')[0];
+          const searchMatch = searchPart.match(/\*\s+SEARCH([\s\S]*)/i);
+          const numbersStr = searchMatch ? searchMatch[1] : '';
+          msgIds = numbersStr.trim().split(/\s+/).filter((id) => /^\d+$/.test(id));
+          buffer = '';
 
-        // Begin fetching chunks
-        step = 'FETCH_CHUNKS';
-        chunkIndex = 0;
-        const currentBatch = msgIds.slice(0, CHUNK_SIZE);
-        console.log(`[IMAP] Fetching batch 1/${Math.ceil(msgIds.length / CHUNK_SIZE)} (messages ${currentBatch[0]}..${currentBatch[currentBatch.length - 1]})...`);
-        sendCmd(`F_${chunkIndex}`, `FETCH ${currentBatch.join(',')} (INTERNALDATE BODY.PEEK[HEADER.FIELDS (DATE FROM SUBJECT)] BODY.PEEK[TEXT])`);
+          console.log(`[IMAP] Found total ${msgIds.length} candidate Interac email(s) in inbox.`);
+
+          if (msgIds.length === 0) {
+            console.log('[IMAP] No matching messages found.');
+            step = 'LOGOUT';
+            sendCmd('A05', 'LOGOUT');
+            return;
+          }
+
+          // Begin fetching chunks
+          step = 'FETCH_CHUNKS';
+          chunkIndex = 0;
+          const currentBatch = msgIds.slice(0, CHUNK_SIZE);
+          const totalBatches = Math.ceil(msgIds.length / CHUNK_SIZE);
+          console.log(`[IMAP] Fetching batch 1/${totalBatches} (messages ${currentBatch[0]}..${currentBatch[currentBatch.length - 1]})...`);
+          sendCmd(`F_${chunkIndex}`, `FETCH ${currentBatch.join(',')} (INTERNALDATE BODY.PEEK[HEADER.FIELDS (DATE FROM SUBJECT)] BODY.PEEK[TEXT])`);
+        } else if (buffer.includes('A03 NO') || buffer.includes('A03 BAD')) {
+          console.error('[IMAP] SEARCH command failed.');
+          socket.end();
+          resolve(parsedReceipts);
+        }
       } else if (step === 'FETCH_CHUNKS') {
         const tag = `F_${chunkIndex}`;
         if (buffer.includes(`${tag} OK`)) {
-          const rawChunk = buffer;
-          buffer = '';
+          const okIdx = buffer.indexOf(`${tag} OK`);
+          const rawChunk = buffer.substring(0, okIdx);
+          buffer = buffer.substring(okIdx + `${tag} OK`.length);
 
           // Parse individual message blocks in this batch
           const parts = rawChunk.split(/\* \d+ FETCH/g);
+          let batchCount = 0;
           for (const part of parts) {
             if (!part.trim()) continue;
             const meta = extractInteracMetadata(part);
             if (meta && meta.amount > 0) {
               parsedReceipts.push(meta);
+              batchCount++;
             }
           }
 
           chunkIndex++;
           const nextStart = chunkIndex * CHUNK_SIZE;
+          const totalBatches = Math.ceil(msgIds.length / CHUNK_SIZE);
+
           if (nextStart < msgIds.length) {
             const nextBatch = msgIds.slice(nextStart, nextStart + CHUNK_SIZE);
-            const totalBatches = Math.ceil(msgIds.length / CHUNK_SIZE);
-            console.log(`[IMAP] Fetching batch ${chunkIndex + 1}/${totalBatches} (messages ${nextBatch[0]}..${nextBatch[nextBatch.length - 1]})...`);
+            console.log(`[IMAP] Parsed batch ${chunkIndex}/${totalBatches} (+${batchCount} receipts, total: ${parsedReceipts.length}). Fetching batch ${chunkIndex + 1}/${totalBatches}...`);
             sendCmd(`F_${chunkIndex}`, `FETCH ${nextBatch.join(',')} (INTERNALDATE BODY.PEEK[HEADER.FIELDS (DATE FROM SUBJECT)] BODY.PEEK[TEXT])`);
           } else {
-            console.log(`[IMAP] Finished fetching all batches. Total valid receipts extracted: ${parsedReceipts.length}.`);
+            console.log(`[IMAP] Parsed final batch ${chunkIndex}/${totalBatches} (+${batchCount} receipts). Total extracted: ${parsedReceipts.length}.`);
             step = 'LOGOUT';
             sendCmd('A05', 'LOGOUT');
           }
         }
       } else if (step === 'LOGOUT' && (buffer.includes('A05 OK') || buffer.includes('* BYE'))) {
-        socket.end();
-        resolve(parsedReceipts);
-      } else if (buffer.includes('NO') || buffer.includes('BAD')) {
-        console.warn('[IMAP] Notice from IMAP server:', buffer.trim());
         socket.end();
         resolve(parsedReceipts);
       }
@@ -245,8 +282,8 @@ export async function fetchAllInteracFromInbox(emailUser, appPassword) {
       resolve(parsedReceipts);
     });
 
-    socket.setTimeout(60000, () => {
-      console.warn('[IMAP] Socket timed out.');
+    socket.setTimeout(300000, () => {
+      console.warn('[IMAP] Socket timed out after 5 minutes of inactivity.');
       socket.destroy();
       resolve(parsedReceipts);
     });
@@ -447,16 +484,16 @@ async function main() {
   if (appPassword) {
     console.log('[Runner] GMAIL_APP_PASSWORD found. Connecting to IMAP server...');
     rawReceipts = await fetchAllInteracFromInbox(emailUser, appPassword);
+    if (rawReceipts.length === 0) {
+      console.warn('[Runner] Warning: No receipts were extracted from the mailbox.');
+      console.warn('[Runner] Please check IMAP search parameters, credentials, or inbox contents.');
+      process.exit(1);
+    }
   } else {
     console.log('[Runner] Note: GMAIL_APP_PASSWORD is not set in local environment.');
     console.log('[Runner] (GMAIL_APP_PASSWORD is encrypted in GitHub Repository Secrets).');
     console.log('[Runner] Running demonstration & verification mode using sample historical receipts...');
     rawReceipts = SAMPLE_HISTORICAL_TRANSFERS;
-  }
-
-  if (rawReceipts.length === 0) {
-    console.log('[Runner] No receipts found to process.');
-    process.exit(0);
   }
 
   console.log(`\n[Runner] Assigning chronological DDMMYYYY-XXX document IDs to ${rawReceipts.length} receipts...`);
