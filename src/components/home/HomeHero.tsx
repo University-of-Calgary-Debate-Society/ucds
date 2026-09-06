@@ -93,108 +93,105 @@ export const HomeHero: React.FC = () => {
 
       {/* Center Animated Title Card Container */}
       <div className="hero-content-wrapper">
-        {/* Main Glass Title Card with Floating Badges (Unblurred & Crisp) */}
-        <div className="hero-glass-card">
-          {/* Watermark Floating Club Logo Behind Text (Fades in after all elements animate in) */}
-          <div className="hero-logo-watermark-wrapper" aria-hidden="true">
-            <div className="hero-logo-watermark-floater">
-              <img
-                src={getAssetUrl('images/seo/logo_normal.png')}
-                alt=""
-                className="hero-logo-watermark-img"
-              />
-            </div>
+        {/* Watermark Floating Club Logo Behind Text (Fades in after all elements animate in) */}
+        <div className="hero-logo-watermark-wrapper" aria-hidden="true">
+          <div className="hero-logo-watermark-floater">
+            <img
+              src={getAssetUrl('images/seo/logo_normal.png')}
+              alt=""
+              className="hero-logo-watermark-img"
+            />
           </div>
-
-          {/* Floating & Interactive Badges around title card */}
-
-          {/* Badge 1: Canada Flag (top-right) */}
-          <div className="floating-badge-anchor badge-canada" title="Click me!">
-            {canadaSpeech && (
-              <div className="badge-speech-bubble" role="status">
-                {canadaSpeech}
-              </div>
-            )}
-            <div className="floating-badge-scaler" onClick={handleCanadaClick}>
-              <img
-                src={getAssetUrl('images/photos/canada_flag.png')}
-                alt="Canada Flag"
-                className="w-full h-full object-contain pointer-events-none"
-              />
-            </div>
-          </div>
-
-          {/* Badge 2: Rex Mascot (bottom-left) */}
-          <div className="floating-badge-anchor badge-rex" title="Click me!">
-            {/* Rex 10-Click Gnome Easter Egg (Appears directly above Rex for 0.4s) */}
-            {showGnome && (
-              <div className="rex-gnome-amateur-popup" aria-hidden="true">
-                <img
-                  src={getAssetUrl('images/photos/gnome.png')}
-                  alt="Gnome Easter Egg"
-                  className="rex-gnome-amateur-img"
-                />
-              </div>
-            )}
-
-            {rexSpeech && !showGnome && (
-              <div className="badge-speech-bubble" role="status">
-                {rexSpeech}
-              </div>
-            )}
-            <div className="floating-badge-scaler" onClick={handleRexClick}>
-              <img
-                src={getAssetUrl('images/photos/rex.png')}
-                alt="Rex Mascot"
-                className="w-full h-full object-contain pointer-events-none"
-              />
-            </div>
-          </div>
-
-          {/* Badge 3: UCalgary Coat of Arms (top-left) */}
-          <div className="floating-badge-anchor badge-ucalgary" title="Click me!">
-            {ucalgarySpeech && (
-              <div className="badge-speech-bubble" role="status">
-                {ucalgarySpeech}
-              </div>
-            )}
-            <div className="floating-badge-scaler" onClick={handleUcalgaryClick}>
-              <img
-                src={getAssetUrl('images/photos/ucalgary.png')}
-                alt="University of Calgary Coat of Arms"
-                className="w-full h-full object-contain pointer-events-none"
-              />
-            </div>
-          </div>
-
-          {/* Badge 4: Gavel (bottom-right) */}
-          <div className="floating-badge-anchor badge-gavel" title="Click me!">
-            {gavelSpeech && (
-              <div className="badge-speech-bubble" role="status">
-                {gavelSpeech}
-              </div>
-            )}
-            <div className="floating-badge-scaler" onClick={handleGavelClick}>
-              <img
-                src={getAssetUrl('images/photos/gavel.png')}
-                alt="Debate Gavel"
-                className="w-full h-full object-contain pointer-events-none"
-              />
-            </div>
-          </div>
-
-          {/* Title Part 1: Rounded rectangle badge with blur and ~50% transparency */}
-          <div className="hero-title-badge-container">
-            <div className="hero-title-badge">
-              <span className="hero-title-part1">The University of Calgary</span>
-            </div>
-          </div>
-
-          {/* Title Part 2: Large text below */}
-          <h1 className="hero-title-part2">
-            Debate Society
-          </h1>
         </div>
+
+        {/* Floating & Interactive Badges around title card */}
+
+        {/* Badge 1: Canada Flag (top-right) */}
+        <div className="floating-badge-anchor badge-canada" title="Click me!">
+          {canadaSpeech && (
+            <div className="badge-speech-bubble" role="status">
+              {canadaSpeech}
+            </div>
+          )}
+          <div className="floating-badge-scaler" onClick={handleCanadaClick}>
+            <img
+              src={getAssetUrl('images/photos/canada_flag.png')}
+              alt="Canada Flag"
+              className="w-full h-full object-contain pointer-events-none"
+            />
+          </div>
+        </div>
+
+        {/* Badge 2: Rex Mascot (bottom-left) */}
+        <div className="floating-badge-anchor badge-rex" title="Click me!">
+          {/* Rex 10-Click Gnome Easter Egg (Appears directly above Rex for 0.4s) */}
+          {showGnome && (
+            <div className="rex-gnome-amateur-popup" aria-hidden="true">
+              <img
+                src={getAssetUrl('images/photos/gnome.png')}
+                alt="Gnome Easter Egg"
+                className="rex-gnome-amateur-img"
+              />
+            </div>
+          )}
+
+          {rexSpeech && !showGnome && (
+            <div className="badge-speech-bubble" role="status">
+              {rexSpeech}
+            </div>
+          )}
+          <div className="floating-badge-scaler" onClick={handleRexClick}>
+            <img
+              src={getAssetUrl('images/photos/rex.png')}
+              alt="Rex Mascot"
+              className="w-full h-full object-contain pointer-events-none"
+            />
+          </div>
+        </div>
+
+        {/* Badge 3: UCalgary Coat of Arms (top-left) */}
+        <div className="floating-badge-anchor badge-ucalgary" title="Click me!">
+          {ucalgarySpeech && (
+            <div className="badge-speech-bubble" role="status">
+              {ucalgarySpeech}
+            </div>
+          )}
+          <div className="floating-badge-scaler" onClick={handleUcalgaryClick}>
+            <img
+              src={getAssetUrl('images/photos/ucalgary.png')}
+              alt="University of Calgary Coat of Arms"
+              className="w-full h-full object-contain pointer-events-none"
+            />
+          </div>
+        </div>
+
+        {/* Badge 4: Gavel (bottom-right) */}
+        <div className="floating-badge-anchor badge-gavel" title="Click me!">
+          {gavelSpeech && (
+            <div className="badge-speech-bubble" role="status">
+              {gavelSpeech}
+            </div>
+          )}
+          <div className="floating-badge-scaler" onClick={handleGavelClick}>
+            <img
+              src={getAssetUrl('images/photos/gavel.png')}
+              alt="Debate Gavel"
+              className="w-full h-full object-contain pointer-events-none"
+            />
+          </div>
+        </div>
+
+        {/* Title Part 1: Rounded rectangle badge with blur and ~50% transparency */}
+        <div className="hero-title-badge-container">
+          <div className="hero-title-badge">
+            <span className="hero-title-part1">The University of Calgary</span>
+          </div>
+        </div>
+
+        {/* Title Part 2: Large text below */}
+        <h1 className="hero-title-part2">
+          Debate Society
+        </h1>
 
         {/* Separated Action Buttons Group below the Title Card */}
         <div className="hero-buttons-group">

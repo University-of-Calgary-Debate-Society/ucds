@@ -258,7 +258,9 @@ export const ExecutiveLayout: React.FC<ExecutiveLayoutProps> = ({ children, acti
 
         {/* Main Section Content */}
         <main className="executive-main-content">
-          {children}
+          <div key={location.pathname} className="animate-pageEnter w-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>

@@ -17,10 +17,14 @@ export const PageTransitionWrapper: React.FC<PageTransitionWrapperProps> = ({ ch
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [location.pathname]);
 
+  const isExecutive = location.pathname.startsWith('/executive');
+  // Avoid remounting or re-animating the outer container when navigating between executive subpages
+  const transitionKey = isExecutive ? '/executive' : location.pathname;
+
   return (
     <div
-      key={location.pathname}
-      className="page-transition-wrapper animate-pageEnter"
+      key={transitionKey}
+      className={`page-transition-wrapper ${isExecutive ? '' : 'animate-pageEnter'}`}
     >
       {children}
     </div>

@@ -446,6 +446,14 @@ header,
   view-transition-name: floating-navbar;
 }
 
+.executive-header {
+  view-transition-name: executive-header;
+}
+
+.executive-sidebar {
+  view-transition-name: executive-sidebar;
+}
+
 /* Respect user preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(root),

@@ -74,6 +74,7 @@ export const ExecutiveOrganizations: React.FC = () => {
   const [formats, setFormats] = useState<string[]>([]);
   const [isOnline, setIsOnline] = useState(false);
   const [email, setEmail] = useState('');
+  const [emailFinance, setEmailFinance] = useState('');
   const [types, setTypes] = useState<string[]>(['club']);
   const [customType, setCustomType] = useState('');
 
@@ -164,6 +165,7 @@ export const ExecutiveOrganizations: React.FC = () => {
     setFormats([]);
     setIsOnline(false);
     setEmail('');
+    setEmailFinance('');
     setTypes(['club']);
     setLinks({});
     setExecutives({});
@@ -186,6 +188,7 @@ export const ExecutiveOrganizations: React.FC = () => {
     setFormats(Array.isArray(org.formats) ? org.formats : []);
     setIsOnline(Boolean(org.isOnline));
     setEmail(org.email || '');
+    setEmailFinance(org['email-finance'] || org.email || '');
     setTypes(Array.isArray(org.type) && org.type.length > 0 ? org.type : ['club']);
     setLinks(typeof org.links === 'object' && org.links !== null ? org.links : {});
     setExecutives(typeof org.executives === 'object' && org.executives !== null ? org.executives : {});
@@ -326,6 +329,7 @@ export const ExecutiveOrganizations: React.FC = () => {
         formats: formats.length > 0 ? formats : undefined,
         isOnline,
         email: email.trim() || undefined,
+        'email-finance': (emailFinance.trim() || email.trim()) || undefined,
         type: types.length > 0 ? types : undefined,
         links: Object.keys(links).length > 0 ? links : undefined,
         executives: Object.keys(executives).length > 0 ? executives : undefined,
@@ -896,6 +900,22 @@ export const ExecutiveOrganizations: React.FC = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         className="exec-input text-xs"
                       />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Finance / Billing Email (email-finance)
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="e.g. finance@ucds.ca (defaults to main contact email if empty)"
+                        value={emailFinance}
+                        onChange={(e) => setEmailFinance(e.target.value)}
+                        className="exec-input text-xs"
+                      />
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        Used for invoicing tournament fees, dues, and ledger auto-resolution.
+                      </div>
                     </div>
 
                     <div>

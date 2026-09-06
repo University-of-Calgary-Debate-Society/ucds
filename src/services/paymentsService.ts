@@ -5,6 +5,7 @@ import {
   getDocs,
   setDoc,
   updateDoc,
+  deleteDoc,
   arrayUnion,
   arrayRemove,
   serverTimestamp,
@@ -537,3 +538,290 @@ export async function recordBillPaymentCompletion(
     throw err;
   }
 }
+
+/**
+ * Generates a clean document ID slug from payment name
+ * (removes spaces, replaces with hyphens, removes symbols and capitalization, keeps alphanumeric)
+ */
+export function slugifyPaymentName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
+
+/**
+ * Fetches all payment bill documents from Firestore for executive administration.
+ * Filters out internal `_default` template.
+ */
+export async function fetchAllPaymentBills(forceRefresh = false): Promise<PaymentBill[]> {
+  if (!forceRefresh) {
+    const cached = clientCache.get<PaymentBill[]>(PAYMENTS_CACHE_KEY);
+    if (cached && cached.length > 0) return cached;
+  }
+
+  if (!db || !isFirebaseConfigured()) {
+    return FALLBACK_PAYMENT_BILLS;
+  }
+
+  try {
+    const snap = await getDocs(collection(db, 'Payments'));
+    if (snap.empty) {
+      return FALLBACK_PAYMENT_BILLS;
+    }
+
+    const bills: PaymentBill[] = snap.docs
+      // Filter out _default and internal documents
+      .filter((d) => d.id !== '_default' && !d.id.startsWith('_'))
+      .map((d) => {
+        const data = d.data();
+        const amt = typeof data.amount === 'number' ? data.amount : 0;
+        return {
+          id: d.id,
+          name: data.name || d.id,
+          description: data.description || '',
+          amount: amt,
+          amountFormatted: data.amountFormatted || `$${amt.toFixed(2)} CAD`,
+          category: data.category || (d.id.includes('membership') ? 'Society Dues' : 'General'),
+          'allowed-payments': Array.isArray(data['allowed-payments'])
+            ? data['allowed-payments']
+            : ['etransfer', 'paypal', 'stripe'],
+          completed: Array.isArray(data.completed) ? data.completed : [],
+          incomplete: Array.isArray(data.incomplete) ? data.incomplete : [],
+          'completed-institution': Array.isArray(data['completed-institution'])
+            ? data['completed-institution']
+            : [],
+          'incomplete-institution': Array.isArray(data['incomplete-institution'])
+            ? data['incomplete-institution']
+            : [],
+          'time-open': data['time-open'] || null,
+          'time-deadline': data['time-deadline'] || null,
+          'time-created': data['time-created'] || '',
+          'time-updated': data['time-updated'] || '',
+        };
+      });
+
+    clientCache.set(PAYMENTS_CACHE_KEY, bills, 5 * 60 * 1000);
+    return bills;
+  } catch (err) {
+    console.warn('Failed to fetch payment bills:', err);
+    return FALLBACK_PAYMENT_BILLS;
+  }
+}
+
+/**
+ * Creates a new Payment bill document in Firestore.
+ */
+export async function createPaymentBill(
+  data: Omit<PaymentBill, 'id' | 'amountFormatted' | 'completed' | 'completed-institution'> & {
+    completed?: string[];
+    'completed-institution'?: string[];
+  },
+  customId?: string
+): Promise<string> {
+  if (!db || !isFirebaseConfigured()) {
+    throw new Error('Firestore is not initialized.');
+  }
+
+  const name = data.name.trim();
+  if (!name) throw new Error('Payment name is required.');
+
+  const docId = customId?.trim() || slugifyPaymentName(name);
+  if (!docId || docId === '_default') {
+    throw new Error('Invalid payment bill identifier.');
+  }
+
+  const amt = typeof data.amount === 'number' ? parseFloat(data.amount.toFixed(2)) : 0;
+  const amountFormatted = `$${amt.toFixed(2)} CAD`;
+
+  const payload: Record<string, unknown> = {
+    name,
+    description: data.description?.trim() || '',
+    amount: amt,
+    amountFormatted,
+    category: data.category?.trim() || 'General',
+    'allowed-payments': data['allowed-payments'] || ['etransfer', 'paypal', 'stripe'],
+    completed: data.completed || [],
+    incomplete: data.incomplete || [],
+    'completed-institution': data['completed-institution'] || [],
+    'incomplete-institution': data['incomplete-institution'] || [],
+    'time-open': data['time-open'] || null,
+    'time-deadline': data['time-deadline'] || null,
+    'time-created': new Date().toISOString(),
+    'time-updated': new Date().toISOString(),
+  };
+
+  const docRef = doc(db, 'Payments', docId);
+  await setDoc(docRef, payload);
+
+  clientCache.invalidate(PAYMENTS_CACHE_KEY);
+  return docId;
+}
+
+/**
+ * Updates an existing Payment bill document in Firestore.
+ */
+export async function updatePaymentBill(
+  billId: string,
+  updates: Partial<PaymentBill>
+): Promise<void> {
+  if (!db || !isFirebaseConfigured()) {
+    throw new Error('Firestore is not initialized.');
+  }
+
+  const payload: Record<string, unknown> = {
+    'time-updated': new Date().toISOString(),
+  };
+
+  if (updates.name !== undefined) payload.name = updates.name.trim();
+  if (updates.description !== undefined) payload.description = updates.description.trim();
+  if (updates.category !== undefined) payload.category = updates.category.trim();
+  if (updates['allowed-payments'] !== undefined) payload['allowed-payments'] = updates['allowed-payments'];
+  if (updates['time-open'] !== undefined) payload['time-open'] = updates['time-open'];
+  if (updates['time-deadline'] !== undefined) payload['time-deadline'] = updates['time-deadline'];
+  if (updates.completed !== undefined) payload.completed = updates.completed;
+  if (updates.incomplete !== undefined) payload.incomplete = updates.incomplete;
+  if (updates['completed-institution'] !== undefined) payload['completed-institution'] = updates['completed-institution'];
+  if (updates['incomplete-institution'] !== undefined) payload['incomplete-institution'] = updates['incomplete-institution'];
+
+  if (typeof updates.amount === 'number') {
+    const amt = parseFloat(updates.amount.toFixed(2));
+    payload.amount = amt;
+    payload.amountFormatted = `$${amt.toFixed(2)} CAD`;
+  }
+
+  const docRef = doc(db, 'Payments', billId);
+  await updateDoc(docRef, payload as { [x: string]: any });
+  clientCache.invalidate(PAYMENTS_CACHE_KEY);
+}
+
+/**
+ * Deletes a Payment bill document from Firestore.
+ */
+export async function deletePaymentBill(billId: string): Promise<void> {
+  if (!db || !isFirebaseConfigured()) {
+    throw new Error('Firestore is not initialized.');
+  }
+
+  const docRef = doc(db, 'Payments', billId);
+  await deleteDoc(docRef);
+  clientCache.invalidate(PAYMENTS_CACHE_KEY);
+}
+
+/**
+ * Resolves an outstanding fee: moves email from incomplete to completed
+ * (or institution from incomplete-institution to completed-institution).
+ * If membership dues, also sets isPaid to true in the Users collection.
+ */
+export async function resolveOutstandingFee(
+  billId: string,
+  payerIdentifier: string,
+  isInstitution: boolean
+): Promise<void> {
+  if (!db || !isFirebaseConfigured()) {
+    throw new Error('Firestore is not initialized.');
+  }
+
+  const cleanPayer = payerIdentifier.trim();
+  const billRef = doc(db, 'Payments', billId);
+
+  if (isInstitution) {
+    await updateDoc(billRef, {
+      'completed-institution': arrayUnion(cleanPayer),
+      'incomplete-institution': arrayRemove(cleanPayer),
+      'time-updated': new Date().toISOString(),
+    });
+  } else {
+    const cleanEmail = cleanPayer.toLowerCase();
+    await updateDoc(billRef, {
+      completed: arrayUnion(cleanEmail),
+      incomplete: arrayRemove(cleanEmail),
+      'time-updated': new Date().toISOString(),
+    });
+
+    // If this is membership dues, also mark the user profile as paid
+    if (billId.includes('membership-fee')) {
+      try {
+        const usersSnap = await getDocs(collection(db, 'Users'));
+        for (const userDoc of usersSnap.docs) {
+          const udata = userDoc.data();
+          if (
+            udata['email-preferred']?.toLowerCase() === cleanEmail ||
+            udata['email-login']?.toLowerCase() === cleanEmail
+          ) {
+            await updateDoc(userDoc.ref, {
+              isPaid: true,
+              'payment-verified-at': new Date().toISOString(),
+              'time-updated': serverTimestamp(),
+            });
+            break;
+          }
+        }
+      } catch (err) {
+        console.warn('Non-critical: Failed to update user isPaid during fee resolution:', err);
+      }
+    }
+  }
+
+  clientCache.invalidate(PAYMENTS_CACHE_KEY);
+}
+
+/**
+ * Revokes a completed payment: moves email back from completed to incomplete
+ * (or institution from completed-institution back to incomplete-institution).
+ * If membership dues, also sets isPaid back to false in the Users collection.
+ */
+export async function revokeCompletedPayment(
+  billId: string,
+  payerIdentifier: string,
+  isInstitution: boolean
+): Promise<void> {
+  if (!db || !isFirebaseConfigured()) {
+    throw new Error('Firestore is not initialized.');
+  }
+
+  const cleanPayer = payerIdentifier.trim();
+  const billRef = doc(db, 'Payments', billId);
+
+  if (isInstitution) {
+    await updateDoc(billRef, {
+      'incomplete-institution': arrayUnion(cleanPayer),
+      'completed-institution': arrayRemove(cleanPayer),
+      'time-updated': new Date().toISOString(),
+    });
+  } else {
+    const cleanEmail = cleanPayer.toLowerCase();
+    await updateDoc(billRef, {
+      incomplete: arrayUnion(cleanEmail),
+      completed: arrayRemove(cleanEmail),
+      'time-updated': new Date().toISOString(),
+    });
+
+    // If this was membership dues, reset user isPaid to false
+    if (billId.includes('membership-fee')) {
+      try {
+        const usersSnap = await getDocs(collection(db, 'Users'));
+        for (const userDoc of usersSnap.docs) {
+          const udata = userDoc.data();
+          if (
+            udata['email-preferred']?.toLowerCase() === cleanEmail ||
+            udata['email-login']?.toLowerCase() === cleanEmail
+          ) {
+            await updateDoc(userDoc.ref, {
+              isPaid: false,
+              'payment-verified-at': null,
+              'time-updated': serverTimestamp(),
+            });
+            break;
+          }
+        }
+      } catch (err) {
+        console.warn('Non-critical: Failed to reset user isPaid during revocation:', err);
+      }
+    }
+  }
+
+  clientCache.invalidate(PAYMENTS_CACHE_KEY);
+}
+

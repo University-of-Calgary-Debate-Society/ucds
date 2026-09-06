@@ -63,7 +63,7 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // 2. Payments Collection (Bills, Dues, and Payment Transaction Ledger)
+    // 2. Payments Collection (Bills, Dues, and Society Invoices)
     // =========================================================================
     match /Payments/{paymentId} {
       // Authenticated users can read payment bills and dues
@@ -75,8 +75,16 @@ service cloud.firestore {
       // Authenticated users can update payment completion status, or executives/admins
       allow update: if isAuthenticated();
 
-      // Only admins can delete payment records
-      allow delete: if isAdmin();
+      // Executives and admins can delete payment bills
+      allow delete: if isExecutive() || isAdmin();
+    }
+
+    // =========================================================================
+    // 2b. Ledger Collection (Society Financial Transactions & Cash Flow)
+    // =========================================================================
+    match /Ledger/{ledgerId} {
+      // Executives and Admins have full access to manage ledger transactions
+      allow read, write: if isExecutive() || isAdmin();
     }
 
     // =========================================================================
@@ -129,7 +137,21 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // 6. Legacy Users Collection (Backwards Compatibility)
+    // 6. Financial Ledger & Payments Collections (Executive Access)
+    // =========================================================================
+    match /Ledger/{docId} {
+      // Financial ledger is restricted to executives and administrators
+      allow read, write: if isExecutive() || isAdmin();
+    }
+
+    match /Payments/{paymentId} {
+      // Authenticated users can view payments/fees; only executives can modify
+      allow read: if isAuthenticated();
+      allow write: if isExecutive() || isAdmin();
+    }
+
+    // =========================================================================
+    // 7. Legacy Users Collection (Backwards Compatibility)
     // =========================================================================
     match /users/{userId} {
       allow get: if isOwner(userId) || isExecutive() || isAdmin();

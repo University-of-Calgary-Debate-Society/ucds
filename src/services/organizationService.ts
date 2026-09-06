@@ -26,6 +26,7 @@ export interface OrganizationDoc {
     cusidregion?: string;
   };
   email?: string;
+  'email-finance'?: string;
   type?: string[];
   formats?: string[];
   isOnline?: boolean;
@@ -40,6 +41,9 @@ export interface OrganizationDoc {
  * conforming strictly to the Organizations collection schema.
  */
 export function normalizeOrgDoc(id: string, raw: Record<string, unknown>): OrganizationDoc {
+  const emailVal = typeof raw.email === 'string' ? raw.email.trim() : undefined;
+  const rawEmailFinance = raw['email-finance'] || raw.emailFinance;
+  const emailFinanceVal = typeof rawEmailFinance === 'string' && rawEmailFinance.trim() ? rawEmailFinance.trim() : emailVal;
   // Normalize formats to string[] in lowercase
   let formats: string[] = [];
   if (Array.isArray(raw.formats)) {
@@ -148,7 +152,8 @@ export function normalizeOrgDoc(id: string, raw: Record<string, unknown>): Organ
     location,
     formats: formats.length > 0 ? formats : undefined,
     isOnline: Boolean(raw.isOnline || raw['is-online']),
-    email: raw.email ? String(raw.email).trim() : undefined,
+    email: emailVal,
+    'email-finance': emailFinanceVal,
     type: type.length > 0 ? type : undefined,
     links,
     executives,
@@ -330,6 +335,7 @@ export async function saveOrganization(
     formats: formatsClean.length > 0 ? formatsClean : undefined,
     isOnline: orgData.isOnline ?? false,
     email: orgData.email?.trim() || undefined,
+    'email-finance': (orgData['email-finance'] || orgData.email)?.trim() || undefined,
     type: (orgData.type || []).map((t) => t.trim()).filter(Boolean),
     links: orgData.links && Object.keys(orgData.links).length > 0 ? orgData.links : undefined,
     executives: orgData.executives && Object.keys(orgData.executives).length > 0 ? orgData.executives : undefined,
