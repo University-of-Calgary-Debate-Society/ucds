@@ -9,6 +9,8 @@ import {
   arrayUnion,
   arrayRemove,
   serverTimestamp,
+  DocumentData,
+  UpdateData,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '@/lib/firebase';
 import { clientCache } from '@/utils/clientCache';
@@ -692,7 +694,7 @@ export async function updatePaymentBill(
   }
 
   const docRef = doc(db, 'Payments', billId);
-  await updateDoc(docRef, payload as { [x: string]: any });
+  await updateDoc(docRef, payload as UpdateData<DocumentData>);
   clientCache.invalidate(PAYMENTS_CACHE_KEY);
 }
 

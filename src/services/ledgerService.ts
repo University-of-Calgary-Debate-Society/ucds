@@ -12,6 +12,8 @@ import {
   documentId,
   arrayUnion,
   arrayRemove,
+  DocumentData,
+  UpdateData,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '@/lib/firebase';
 import { clientCache } from '@/utils/clientCache';
@@ -302,7 +304,7 @@ export async function updateLedgerRecord(
   }
 
   const docRef = doc(db, 'Ledger', id);
-  await updateDoc(docRef, payload as { [x: string]: any });
+  await updateDoc(docRef, payload as UpdateData<DocumentData>);
   clientCache.invalidate(LEDGER_CACHE_KEY);
 }
 
@@ -472,7 +474,7 @@ export async function checkAndAutoResolveDeposit(deposit: {
           updates['incomplete-institution'] = arrayRemove(matchedPayer);
         }
 
-        await updateDoc(paymentDoc.ref, updates as { [x: string]: any });
+        await updateDoc(paymentDoc.ref, updates as UpdateData<DocumentData>);
 
         // If this is the membership dues bill, also sync user's isPaid in Users collection if user is eligible (isUCDS: true)
         if (paymentDoc.id.includes('membership-fee') && targetEmail) {
