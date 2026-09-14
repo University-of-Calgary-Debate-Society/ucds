@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Cloud, Terminal, Check, Copy, ExternalLink, ShieldCheck, ArrowRight } from 'lucide-react';
-import { StatusBadge } from './StatusBadge';
+import { StatusBadge } from '@/components/common';
 
 const GithubIcon: React.FC<{ className?: string }> = ({ className = 'w-6 h-6' }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">

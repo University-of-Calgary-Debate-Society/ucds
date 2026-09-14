@@ -44,3 +44,5 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, text, classNam
     </span>
   );
 };
+
+export default StatusBadge;

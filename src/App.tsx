@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Header } from '@/components/Header';
-import { FloatingNavbar } from '@/components/FloatingNavbar';
-import { SettingsModal } from '@/components/SettingsModal';
-import { PageTransitionWrapper } from '@/components/PageTransitionWrapper';
-import { MiniScrollVisualizer } from '@/components/MiniScrollVisualizer';
+import {
+  Header,
+  FloatingNavbar,
+  SettingsModal,
+  PageTransitionWrapper,
+  MiniScrollVisualizer,
+} from '@/components/common';
 import { HomeHero } from '@/components/home/HomeHero';
 import { MemberLogin } from '@/components/member/MemberLogin';
 import { MemberRegister } from '@/components/member/MemberRegister';
@@ -18,6 +20,7 @@ import { ExecutiveFinance } from '@/components/executive/ExecutiveFinance';
 import { ExecutiveMembers } from '@/components/executive/ExecutiveMembers';
 import { ExecutivePosts } from '@/components/executive/ExecutivePosts';
 import { ExecutiveOrganizations } from '@/components/executive/ExecutiveOrganizations';
+import { OurStoryHistory } from '@/components/about/OurStoryHistory';
 import { updateSeasonalSeoTags } from '@/utils/seasonalLogo';
 
 export const App: React.FC = () => {
@@ -49,6 +52,10 @@ export const App: React.FC = () => {
           <Routes>
             {/* Homepage */}
             <Route path="/" element={<HomeHero />} />
+
+            {/* About Section */}
+            <Route path="/about" element={<OurStoryHistory />} />
+            <Route path="/about/history" element={<OurStoryHistory />} />
 
             {/* Connect Section */}
             <Route path="/connect/socials" element={<SocialMedia />} />

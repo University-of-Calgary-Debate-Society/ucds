@@ -25,3 +25,6 @@ Keep the repository organized by separating scripts, css and pages. the pages, o
 
 HTTPS ERROR PAGES:
 Error pages should always have the ability to return to the homepage as a button.
+
+BUTTONS:
+Make sure to look for previously used buttons to save on resources as much as possible. This should go for all elements used on the webapp. 

@@ -37,10 +37,12 @@ export const MiniScrollVisualizer: React.FC = () => {
   const TRACK_HEIGHT = 160; // px
   const normalizedPath = location.pathname.replace(/\/+$/, '') || '/';
   const isHomePage = normalizedPath === '/' || normalizedPath === '/home';
+  const isHistoryPage = normalizedPath.startsWith('/about/history') || normalizedPath === '/about';
+  const shouldHideVisualizer = isHomePage || isHistoryPage;
 
   // Robust, cross-browser scroll calculation
   const updateScrollMetrics = useCallback(() => {
-    if (isHomePage) {
+    if (shouldHideVisualizer) {
       setIsScrollable(false);
       return;
     }
@@ -68,10 +70,10 @@ export const MiniScrollVisualizer: React.FC = () => {
     } else {
       setScrollProgress(0);
     }
-  }, [isHomePage]);
+  }, [shouldHideVisualizer]);
 
   useEffect(() => {
-    if (isHomePage) {
+    if (shouldHideVisualizer) {
       setIsScrollable(false);
       return;
     }
@@ -114,7 +116,7 @@ export const MiniScrollVisualizer: React.FC = () => {
       window.removeEventListener('resize', handleResize);
       if (resizeObserver) resizeObserver.disconnect();
     };
-  }, [updateScrollMetrics, location.pathname, isHomePage]);
+  }, [updateScrollMetrics, location.pathname, shouldHideVisualizer]);
 
   // Thumb sizing & positioning
   const thumbHeight = Math.max(TRACK_HEIGHT * viewportRatio, 24);
@@ -226,8 +228,8 @@ export const MiniScrollVisualizer: React.FC = () => {
     window.scrollTo({ top: scrollHeight, behavior: 'smooth' });
   };
 
-  // Permanently hidden on homepage
-  if (isHomePage) return null;
+  // Permanently hidden on homepage and history page (which features its own interactive timeline rail)
+  if (shouldHideVisualizer) return null;
 
   return (
     <div
@@ -320,3 +322,5 @@ export const MiniScrollVisualizer: React.FC = () => {
     </div>
   );
 };
+
+export default MiniScrollVisualizer;

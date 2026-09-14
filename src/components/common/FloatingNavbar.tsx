@@ -210,3 +210,5 @@ export const FloatingNavbar: React.FC = () => {
     </nav>
   );
 };
+
+export default FloatingNavbar;

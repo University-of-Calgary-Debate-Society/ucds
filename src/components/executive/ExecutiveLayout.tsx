@@ -22,7 +22,7 @@ import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { getSeasonalLogoInfo } from '@/utils/seasonalLogo';
 import { getAssetUrl } from '@/utils/assetUrl';
 import { useSmoothNavigate } from '@/utils/navigation';
-import { LoadingScreen } from '@/components/LoadingScreen';
+import { LoadingScreen } from '@/components/common';
 
 interface ExecutiveLayoutProps {
   children: React.ReactNode;

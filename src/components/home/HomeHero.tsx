@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Info, Sparkles } from 'lucide-react';
-import { RotatingBackground } from './RotatingBackground';
+import { RotatingBackground } from '@/components/common';
 import { getAssetUrl } from '@/utils/assetUrl';
 import { useSmoothNavigate } from '@/utils/navigation';
 

@@ -44,7 +44,7 @@ import {
   DEFAULT_MEMBERSHIP_FEE_ID,
   type UserPayableItem,
 } from '@/services/paymentsService';
-import { LoadingScreen } from '@/components/LoadingScreen';
+import { LoadingScreen } from '@/components/common';
 import { FloatingAlert } from './FloatingAlert';
 import { PayPalButton } from './PayPalButton';
 import { useSmoothNavigate } from '@/utils/navigation';
@@ -97,6 +97,10 @@ export const MemberPortal: React.FC = () => {
   const [gradStep, setGradStep] = useState<number>(0);
   const [isGraduating, setIsGraduating] = useState(false);
 
+  // Sign Out Confirmation Modal State
+  const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
   // Mailing list subscriptions state
   const [subscriberLists, setSubscriberLists] = useState<string[]>([]);
   const [isUpdatingLists, setIsUpdatingLists] = useState(false);
@@ -108,7 +112,8 @@ export const MemberPortal: React.FC = () => {
       isPayPalModalOpen ||
       isInteracModalOpen ||
       isRolesModalOpen ||
-      isGradModalOpen;
+      isGradModalOpen ||
+      isSignOutModalOpen;
 
     if (isAnyModalOpen) {
       const originalOverflow = document.body.style.overflow;
@@ -123,6 +128,7 @@ export const MemberPortal: React.FC = () => {
     isInteracModalOpen,
     isRolesModalOpen,
     isGradModalOpen,
+    isSignOutModalOpen,
   ]);
 
   // Feedback alerts
@@ -212,12 +218,16 @@ export const MemberPortal: React.FC = () => {
     return () => unsubscribe();
   }, [user, navigate]);
 
-  const handleLogout = async () => {
+  const handleConfirmLogout = async () => {
     try {
+      setIsSigningOut(true);
       await logout();
       navigate('/member/login', { replace: true });
     } catch (err) {
       console.error('Logout error:', err);
+    } finally {
+      setIsSigningOut(false);
+      setIsSignOutModalOpen(false);
     }
   };
 
@@ -1454,7 +1464,7 @@ export const MemberPortal: React.FC = () => {
           <button
             type="button"
             className="btn-form-back py-3 px-8 text-sm font-extrabold text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2 shadow-sm"
-            onClick={handleLogout}
+            onClick={() => setIsSignOutModalOpen(true)}
           >
             <LogOut className="w-4 h-4" />
             <span>Sign Out of Account</span>
@@ -1883,6 +1893,67 @@ export const MemberPortal: React.FC = () => {
                 >
                   <GraduationCap className="w-4 h-4" />
                   <span>{isGraduating ? 'Graduating...' : getGradButtonText()}</span>
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {/* POPUP: SIGN OUT CONFIRMATION MODAL */}
+      {isSignOutModalOpen &&
+        createPortal(
+          <div
+            className="modal-org-overlay"
+            onClick={() => !isSigningOut && setIsSignOutModalOpen(false)}
+          >
+            <div
+              className="modal-org-content max-w-md p-6 sm:p-7 space-y-5"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="signout-modal-title"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-rose-500/10 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                  <LogOut className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 id="signout-modal-title" className="modal-header-title text-xl font-bold font-title">
+                    Sign Out?
+                  </h3>
+                  <p className="modal-header-subtitle text-sm mt-1 text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Are you sure you want to sign out of your account? You will need to sign back in to access your profile, registrations, and society privileges.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  className="btn-form-back py-2.5 px-5 text-sm font-semibold"
+                  onClick={() => setIsSignOutModalOpen(false)}
+                  disabled={isSigningOut}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn-form-next py-2.5 px-6 text-sm font-bold bg-rose-600 hover:bg-rose-700 text-white flex items-center gap-2"
+                  onClick={handleConfirmLogout}
+                  disabled={isSigningOut}
+                >
+                  {isSigningOut ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Signing out...</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="w-4 h-4" />
+                      <span>Sign Out</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>

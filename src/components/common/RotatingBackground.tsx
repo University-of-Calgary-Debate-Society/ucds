@@ -104,3 +104,5 @@ export const RotatingBackground: React.FC = () => {
     </>
   );
 };
+
+export default RotatingBackground;

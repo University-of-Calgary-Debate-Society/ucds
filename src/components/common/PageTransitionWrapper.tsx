@@ -30,3 +30,5 @@ export const PageTransitionWrapper: React.FC<PageTransitionWrapperProps> = ({ ch
     </div>
   );
 };
+
+export default PageTransitionWrapper;

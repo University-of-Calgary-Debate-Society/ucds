@@ -7,6 +7,7 @@
 @import "./member/member.css";
 @import "./connect/socials.css";
 @import "./executive/executive.css";
+@import "./about/history.css";
 
 @layer base {
   :root {

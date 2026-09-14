@@ -3,7 +3,7 @@ import { Flame, LogIn, LogOut, User as UserIcon, Calendar, MapPin, Tag, RefreshC
 import { useAuth } from '@/hooks/useAuth';
 import { isFirebaseConfigured, firebaseConfig } from '@/lib/firebase';
 import { getDebateEvents, type DebateEvent } from '@/services/firestore';
-import { StatusBadge } from './StatusBadge';
+import { StatusBadge } from '@/components/common';
 
 export const FirebaseDemo: React.FC = () => {
   const { user, signInWithGoogle, logout, authError, clearError } = useAuth();
