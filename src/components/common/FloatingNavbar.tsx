@@ -52,7 +52,7 @@ const NAV_CATEGORIES: NavCategory[] = [
     name: 'Connect',
     icon: Share2,
     subcategories: [
-      { title: 'Discord Community', href: 'https://discord.gg/ucds', desc: 'Join active discussion channels' },
+      { title: 'Discord Community', href: 'https://discord.gg/5TAG3c8TwC', desc: 'Join active discussion channels' },
       { title: 'Social Media', href: '/connect/socials', desc: 'Instagram, YouTube, and X' },
       { title: 'Contact Us', href: '/connect/contact', desc: 'General & executive inquiries' },
       { title: 'Partners & Sponsors', href: '/connect/partners', desc: 'Institutional partnerships' },

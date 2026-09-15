@@ -470,9 +470,8 @@ export const OurStoryHistory: React.FC = () => {
                   className={`${floatClass} anim-scale-up`}
                 >
                   <div
-                    className={`mission-pillar-card cursor-pointer ${
-                      isSelected ? 'ring-2 ring-[#0075A2] dark:ring-[#53afd0]' : ''
-                    }`}
+                    className={`mission-pillar-card cursor-pointer ${isSelected ? 'ring-2 ring-[#0075A2] dark:ring-[#53afd0]' : ''
+                      }`}
                   >
                     <div className="flex items-center gap-3.5 mb-3">
                       <div className="p-3 rounded-xl bg-[#0075A2]/10 dark:bg-[#53afd0]/20 text-[#0075A2] dark:text-[#53afd0] shrink-0">
@@ -530,13 +529,13 @@ export const OurStoryHistory: React.FC = () => {
           {/* Beat 1: Stepping Out From Edmonton's Shadow */}
           <div className="max-w-2xl mr-auto mb-24 -mt-10 anim-slide-left delay-1">
             <h2 className="cardless-headline mb-4">
-              Stepping Out From Edmonton&apos;s Shadow
+              Gaining Full Autonomy
             </h2>
             <p className="cardless-lead-text mb-4">
-              Before 1966, higher education in Calgary operated as an administrative satellite of the University of Alberta. When the <em>Universities Act</em> granted Calgary autonomous charter status in 1966, an exhilarating wave of independence swept the campus.
+              Before 1966, higher education in Calgary operated as a single entity with the University of Alberta. When the <em>Universities Act</em> granted Calgary autonomous charter status in 1966, an exhilarating wave of independence swept the campus.
             </p>
             <p className="cardless-sub-text">
-              In raw brutalist concrete lecture halls, students gathered on Friday afternoons to deliberate the urgent transformations altering their prairie home. This grassroots forum established the direct lineage of the University of Calgary Debate Society.
+              In the concrete lecture halls of the era, students gathered on Friday afternoons to deliberate the urgent transformations altering their prairie home. This grassroots forum established the direct lineage of the University of Calgary Debate Society.
             </p>
           </div>
 
@@ -549,7 +548,7 @@ export const OurStoryHistory: React.FC = () => {
                 className="history-aperture-img"
               />
               <div className="absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-black/90 via-black/55 to-transparent text-white text-sm">
-                <span className="font-bold">Early University of Calgary:</span> The formative northwest campus grounds where Calgary debaters first organized intercollegiate forums.
+                <span className="font-bold">Early University of Calgary:</span> The formative northwest campus grounds where Calgary debaters first organized collegiate debate forums.
               </div>
             </div>
           </div>
@@ -559,13 +558,13 @@ export const OurStoryHistory: React.FC = () => {
           {/* Beat 2: 1973 Oil Boom, Lougheed & NEP */}
           <div className="max-w-3xl mr-auto -mt-10 mb-24 anim-slide-left delay-1">
             <h3 className="cardless-headline text-3xl sm:text-5xl mb-4">
-              A Crucible of High-Stakes Public Policy
+              An Era of High-Stakes Debates
             </h3>
             <p className="cardless-lead-text mb-4">
-              The 1973 global oil shock transformed Calgary almost overnight from a quiet regional post into Canada&apos;s corporate petroleum capital. Sky-scraping corporate towers reshaped the downtown skyline within months. Immense wealth collided with intensifying constitutional tensions.
+              The 1973 global oil shock transformed Calgary almost overnight from a quiet regional post into Canada&apos;s corporate petroleum capital. Sky-scraping corporate towers reshaped the downtown skyline within months. Immense wealth collided with deepening political tensions.
             </p>
             <p className="cardless-sub-text">
-              Premier Peter Lougheed championed provincial resource sovereignty against Ottawa, culminating in the fierce battles over Pierre Trudeau&apos;s 1980 National Energy Program (NEP). On campus, these were not hypothetical debate prompts—they were visceral struggles debated passionately on Friday evenings in the Students&apos; Union.
+              Premier Peter Lougheed championed provincial resource sovereignty against Ottawa, culminating in the fierce battles over Pierre Trudeau&apos;s 1980 National Energy Program (NEP). On campus, these were not hypothetical debate prompts—they were visceral struggles debated passionately on Friday evenings in the old Social Sciences lecture halls. These issues continue to echo into the present.
             </p>
           </div>
 
@@ -578,7 +577,7 @@ export const OurStoryHistory: React.FC = () => {
                 className="history-aperture-img"
               />
               <div className="absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-black/90 via-black/55 to-transparent text-white text-sm">
-                <span className="font-bold">Calgary Skyline, 1970:</span> Downtown cranes rising as energy headquarters redefined the provincial landscape.
+                <span className="font-bold">Downtown Calgary, 1970:</span> Resource extraction headquarters redefining the provincial landscape.
               </div>
             </div>
           </div>
@@ -606,17 +605,17 @@ export const OurStoryHistory: React.FC = () => {
           ref={(el) => registerSectionRef('nineties', el)}
           className="mb-56 scroll-mt-24 relative"
         >
-          <div className="history-watermark-year anim-focus-in select-none">1993</div>
+          <div className="history-watermark-year anim-focus-in select-none">1990s</div>
 
           <div className="max-w-3xl mr-auto -mt-10 mb-20 anim-slide-left delay-1">
             <h2 className="cardless-headline mb-4">
-              The Parliamentary Crucible: 7 Minutes, Zero Notes
+              The Rise of Parliamentary Debating
             </h2>
             <p className="cardless-lead-text mb-4">
               The 1990s were an uncompromising golden age for Canadian intercollegiate debating. Contests were governed by the classic <strong>Canadian Parliamentary (CP)</strong> format—a rigorous two-on-two battle of wits shaped by sharp points of order, cross-floor heckles, and unscripted rhetorical delivery.
             </p>
             <p className="cardless-sub-text">
-              Debaters received challenging policy motions with merely fifteen minutes of preparation. Laptops and mobile phones did not exist. Debaters had to rely entirely on memory, poise under pressure, and rapid extemporaneous rebuttal.
+              Debaters received challenging policy motions with merely fifteen minutes of preparation, the same as today. Laptops and mobile phones did not exist, so debaters had to rely on memory, poise under pressure, and rapid extemporaneous rebuttal.
             </p>
           </div>
 
@@ -641,10 +640,10 @@ export const OurStoryHistory: React.FC = () => {
                 <Trophy className="w-5 h-5 text-amber-500" />
               </div>
               <h3 className="cardless-headline text-2xl sm:text-4xl">
-                Guppy Cup &amp; National Glory
+                McGoun Cup &amp; National Glory
               </h3>
               <p className="cardless-lead-text text-base sm:text-lg leading-relaxed">
-                Calgary debaters surged across the circuit, claiming championships at the Guppy Cup, CUSID Western Championships, and advancing deep into the out-rounds of CUSID Nationals and North Americans.
+                Calgary debaters surged across the circuit, claiming championships at the McGoun Cup in 1996-1997, and advancing deep into the out-rounds of CUSID Nationals and North Americans.
               </p>
             </div>
 
@@ -661,11 +660,6 @@ export const OurStoryHistory: React.FC = () => {
             </div>
           </div>
 
-          <div className="max-w-3xl mx-auto text-center py-8 anim-scale-up delay-3">
-            <p className="text-2xl font-serif italic opacity-95 leading-relaxed">
-              &ldquo;In the early 1990s, two undergraduates shared these exact halls, testing their arguments in collegiate rounds before shaping Alberta into the 21st century: Danielle Smith and Naheed Nenshi.&rdquo;
-            </p>
-          </div>
         </section>
 
         {/* ================================================================= */}
@@ -677,11 +671,11 @@ export const OurStoryHistory: React.FC = () => {
           ref={(el) => registerSectionRef('two-thousands', el)}
           className="mb-56 scroll-mt-24 relative"
         >
-          <div className="history-watermark-year text-right anim-focus-in select-none">2004</div>
+          <div className="history-watermark-year text-right anim-focus-in select-none">2000s</div>
 
           <div className="max-w-3xl ml-auto -mt-10 mb-20 anim-slide-right delay-1">
             <h2 className="cardless-headline mb-4">
-              The Millennium Turn: Global Stages &amp; Provincial Alliances
+              The Millennium Turn: Global Stages &amp; Club Expansion
             </h2>
             <p className="cardless-lead-text mb-4">
               The dawn of the 21st century launched UCDS onto the global circuit. While previous decades solidified regional dominance across western Canada, the 2000s saw Calgary delegations fly across the Atlantic and Pacific—representing the University of Calgary at the <strong>World Universities Debating Championship (WUDC)</strong> in Glasgow, Singapore, and Cork.
@@ -698,10 +692,10 @@ export const OurStoryHistory: React.FC = () => {
                 <Globe2 className="w-5 h-5 text-[#0075A2] dark:text-[#53afd0]" />
               </div>
               <h3 className="cardless-headline text-xl sm:text-2xl">
-                Worlds Debating (WUDC)
+                Worlds Debating
               </h3>
               <p className="cardless-lead-text text-base leading-relaxed">
-                Sending premier Calgary delegations to compete against Oxford, Harvard, Sydney, and Monash under the rigorous British Parliamentary four-team format.
+                Calgary delegations competed against the best from Oxford, Harvard, Standford, Sydney, Monash, and a plethora of other world class institutions under the rigorous British Parliamentary format, consistently breaking to the elimination rounds.
               </p>
             </div>
 
@@ -710,10 +704,10 @@ export const OurStoryHistory: React.FC = () => {
                 <Network className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
               </div>
               <h3 className="cardless-headline text-xl sm:text-2xl">
-                UADS &amp; ADSA Collaboration
+                UADS &amp; ADSA
               </h3>
               <p className="cardless-lead-text text-base leading-relaxed">
-                Joining forces with the University of Alberta Debate Society (UADS) and Alberta Debate and Speech Association (ADSA) to inaugurate joint Alberta Cups, judge academies, and unified circuits.
+                UCDS joined forces with the University of Alberta Debate Society (UADS) and Alberta Debate and Speech Association (ADSA) to strengthen the western circuit.
               </p>
             </div>
 
@@ -722,10 +716,10 @@ export const OurStoryHistory: React.FC = () => {
                 <Users className="w-5 h-5 text-amber-500 dark:text-amber-400" />
               </div>
               <h3 className="cardless-headline text-xl sm:text-2xl">
-                High School Coaching
+                Mentorship
               </h3>
               <p className="cardless-lead-text text-base leading-relaxed">
-                Mentoring hundreds of secondary students across Calgary and rural Alberta, organizing novice clinics, and cultivating the next generation of oratorical leaders.
+                Calgary high school programs have historically been some of the strongest in the country, and UCDS has played a significant role in that development. Calgary's roots run deep.
               </p>
             </div>
           </div>
@@ -744,10 +738,10 @@ export const OurStoryHistory: React.FC = () => {
 
           <div className="max-w-3xl ml-auto -mt-10 mb-24 anim-slide-right delay-1">
             <h2 className="cardless-headline mb-4">
-              Tournaments, The Dino Cup &amp; Pandemic Resilience
+              Tournaments, Virtualization &amp; Pandemic Resilience
             </h2>
             <p className="cardless-lead-text mb-4">
-              The 2010s expanded UCDS into a regional powerhouse. The society inaugurated its premier tournaments: the <strong>Dino Cup</strong>, the <strong>Calgary Open</strong>, and high school invitationals in partnership with the Alberta Debate and Speech Association (ADSA).
+              Calgary cemented its role as a tournaments hub by inaugurating the <strong>Dino Cup</strong> and <strong>Calgary Open</strong>, welcoming teams from across North America. When the COVID-19 pandemic struck in 2020, UCDS engineered a rapid digital pivot, sustaining debate across Discord and digital pairing platforms and connecting students across time zones.
             </p>
             <p className="cardless-sub-text">
               When the COVID-19 pandemic closed campuses in March 2020, UCDS engineered a rapid digital transition. Operating across Discord and digital pairing systems, Calgary provided an indispensable intellectual haven for students, connecting across European and Asian time zones without borders.
@@ -758,7 +752,7 @@ export const OurStoryHistory: React.FC = () => {
           <div className="winding-logo-stage anim-scale-up delay-2">
             <div className="text-center mb-12">
               <h3 className="cardless-headline text-3xl sm:text-5xl">
-                The Heraldry of Reason
+                Transformation and Rebranding
               </h3>
             </div>
 
@@ -820,15 +814,15 @@ export const OurStoryHistory: React.FC = () => {
 
           <div className="max-w-3xl mr-auto -mt-10 mb-20 anim-slide-left delay-1">
             <h2 className="cardless-headline mb-4">
-              The Sanctuary of Spoken Reason in an Automated World
+              Spoken Reason in an Automated World
             </h2>
             <p className="cardless-lead-text mb-4">
-              Artificial intelligence can synthesize essays in seconds. Algorithms can simulate conviction. But genuine intellect is not the automated generation of text—it is the courageous capacity to <strong>interrogate assertions, detect subtle logical fallacies, and evaluate human values in real time</strong>.
+              Artificial intelligence can generate text and simulate conviction in seconds. But genuine intellect is not the automated generation of language—it is the courageous capacity to <strong>interrogate assertions, detect subtle logical fallacies, and evaluate human values in real time</strong>.
             </p>
           </div>
 
           {/* Cardless Editorial: The Echo Chamber vs The Antidote (Directly on Page) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 sm:gap-16 mb-24">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-12 sm:gap-16 mb-24">
             <div className="space-y-4 anim-slide-left delay-2">
               <div className="p-2.5 rounded-xl bg-rose-500/10 dark:bg-rose-500/20 text-rose-500 dark:text-rose-400 w-fit">
                 <Flame className="w-5 h-5" />
@@ -849,7 +843,7 @@ export const OurStoryHistory: React.FC = () => {
                 The UCDS Antidote
               </h3>
               <p className="cardless-lead-text text-base sm:text-lg leading-relaxed">
-                The University of Calgary Debate Society serves as a radical counterweight. Here, students step away from screens, stand before a room of peers, and engage in unscripted, spoken deliberation where opposing ideas are welcomed as the raw material of truth.
+                The University of Calgary Debate Society serves as a radical counterweight. Here, students step away from screens, stand before a room of peers, and engage in unscripted, spoken deliberation where opposing ideas are welcomed as the raw material of truth. We build community, form life-long bonds and prepare students for an ever-evolving world that requires serious mental fortitude, creativity, and the courage to speak one&apos;s mind.
               </p>
             </div>
           </div>
@@ -903,7 +897,7 @@ export const OurStoryHistory: React.FC = () => {
               </div>
 
               {/* Naheed Nenshi Side */}
-              <div className="space-y-6 anim-slide-right delay-2 md:translate-y-12">
+              <div className="space-y-6 anim-slide-right delay-2">
                 <div className="titan-feathered-portrait float-gentle-2 ml-auto">
                   <DriveImage
                     fileId={DRIVE_IMAGES.naheedNenshi}
@@ -965,10 +959,20 @@ export const OurStoryHistory: React.FC = () => {
                 An AED to Campus Culture: Re-Igniting Dialogue in Calgary
               </h2>
               <p className="cardless-lead-text mb-4">
-                For the 2026–2027 academic year, the University of Calgary Debate Society has set an ambitious mandate: to act as an <strong>automated external defibrillator (AED) to campus culture</strong>—shocking vitality, spontaneous community, and intellectual friction back into university life.
+                For the 2026–2027 academic year, UCDS has set an ambitious mandate: to act as an <strong>engine to campus culture</strong>—injecting vitality, spontaneous community, and intellectual friction back into university life.
               </p>
               <p className="cardless-sub-text">
-                Following years of post-pandemic fragmentation and algorithmically induced social fatigue, university campuses risk becoming transactional spaces where students commute, study in isolation, and leave. UCDS is committed to shattering that passivity through live, spoken discourse.
+                Following years of post-pandemic fragmentation and algorithmically induced social fatigue, university campuses risk becoming transactional spaces where students commute, study in isolation, and leave. UCDS is committed to shattering that passivity through live, spoken discourse and multi-disciplinary social events.
+              </p>
+              <p className="cardless-sub-text">
+                <a
+                  href="https://www.youtube.com/watch?v=ivVPJhYM8Ng&vl=en"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline decoration-wavy decoration-amber-300/70 underline-offset-4 hover:decoration-amber-300"
+                >
+                  Terrence Tao said it best
+                </a>
               </p>
             </div>
           </div>
