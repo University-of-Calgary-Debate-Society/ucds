@@ -4,11 +4,10 @@ import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
 // https://vite.js.org/config/
-export default defineConfig(({ command, mode }) => {
-  const isProduction = mode === 'production' || command === 'build' || process.env.NODE_ENV === 'production' || Boolean(process.env.GITHUB_ACTIONS);
-  // Use '/ucds/' base path for GitHub Pages subfolder deployment by default,
-  // or '/' if a custom domain (e.g. ucds.ca via Cloudflare) or root deployment is configured.
-  const base = process.env.VITE_BASE_PATH || (isProduction ? '/ucds/' : '/');
+export default defineConfig(() => {
+  // Use '/' base path for custom domain (ucds.ca via Cloudflare/GitHub Pages) and local dev.
+  // Can be overridden by VITE_BASE_PATH if ever deploying to a subfolder.
+  const base = process.env.VITE_BASE_PATH || '/';
 
   return {
     plugins: [
