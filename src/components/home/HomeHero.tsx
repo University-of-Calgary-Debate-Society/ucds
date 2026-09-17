@@ -79,11 +79,11 @@ export const HomeHero: React.FC = () => {
   };
 
   const handleUcalgaryClick = () => {
-    setUcalgarySpeech('mess with the bull...');
+    setUcalgarySpeech('Mess with the bull...');
   };
 
   const handleGavelClick = () => {
-    setGavelSpeech('gavel noises');
+    setGavelSpeech('*GAVEL NOISES*');
   };
 
   return (

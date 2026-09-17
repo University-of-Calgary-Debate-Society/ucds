@@ -63,6 +63,10 @@ export const MemberLogin: React.FC = () => {
       const msg = err instanceof Error ? err.message : 'Invalid email or password.';
       if (msg.includes('user-not-found') || msg.includes('wrong-password') || msg.includes('invalid-credential')) {
         setError('Incorrect email or password. Please try again.');
+      } else if (msg.includes('unauthorized-domain')) {
+        setError('Authentication domain authorization in progress. Please refresh the page and try again.');
+      } else if (msg.includes('popup-blocked')) {
+        setError('The sign-in popup was blocked by your browser. Please allow popups for ucds.ca.');
       } else {
         setError(msg);
       }
@@ -86,7 +90,15 @@ export const MemberLogin: React.FC = () => {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Google sign in was cancelled or failed.';
-      setError(msg);
+      if (msg.includes('unauthorized-domain')) {
+        setError('Domain authorization in progress for ucds.ca. Please refresh and try again.');
+      } else if (msg.includes('popup-blocked')) {
+        setError('Google sign-in popup was blocked. Please enable popups for ucds.ca.');
+      } else if (msg.includes('popup-closed-by-user')) {
+        setError('Sign-in cancelled before completing.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setIsSubmitting(false);
     }

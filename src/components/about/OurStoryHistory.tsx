@@ -48,15 +48,16 @@ const DRIVE_IMAGES = {
   ucCampus: '1KDgbEVfULFY8JztmE_u1_mapR5vilIJa',
   earlyUofC: '15bekFBr-zoQPCJjlR1PgV_VV-cvBfvBw',
   ninetiesImage: '1RTa8zblwTCvGvxatNcH550WwQI8ZdPyF',
+  nenshi_1992: '1LTmbjtdxqYVGbXkYXA4wuUxYzTQ0BRGG',
 };
 
-const getDriveDirectUrl = (fileId: string): string => {
-  return `https://lh3.googleusercontent.com/d/${fileId}`;
-};
+const DRIVE_CACHE_NAME = 'ucds_history_drive_images_v2';
 
-const getDriveThumbnailUrl = (fileId: string): string => {
-  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600`;
-};
+const getDriveEndpoints = (fileId: string): string[] => [
+  `https://lh3.googleusercontent.com/d/${fileId}`,
+  `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600`,
+  `https://drive.google.com/uc?export=view&id=${fileId}`,
+];
 
 interface DriveImageProps {
   fileId: string;
@@ -67,34 +68,234 @@ interface DriveImageProps {
 
 const DriveImage: React.FC<DriveImageProps> = ({ fileId, alt, className = '', wrapperClassName = '' }) => {
   const [loaded, setLoaded] = useState(false);
-  const [currentSrc, setCurrentSrc] = useState(getDriveDirectUrl(fileId));
   const [hasError, setHasError] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState<string>('');
+  const [retryCount, setRetryCount] = useState<number>(0);
+  const [secondsUntilRetry, setSecondsUntilRetry] = useState<number>(0);
+  const [isRetrying, setIsRetrying] = useState<boolean>(false);
 
+  const activeBlobUrlRef = useRef<string | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef<boolean>(true);
+
+  // Helper to cleanup any active timers
+  const clearAllTimers = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+  };
+
+  // 1. Check if image is stored in user's browser cache, otherwise load from network
+  const checkCacheAndLoad = useCallback(async (targetFileId: string, currentRetry = 0) => {
+    clearAllTimers();
+    if (!isMountedRef.current) return;
+
+    const cacheKey = `https://ucds.ca/drive-cache/${targetFileId}`;
+
+    // Step A: Check browser Cache Storage API
+    if (typeof window !== 'undefined' && 'caches' in window) {
+      try {
+        const cache = await caches.open(DRIVE_CACHE_NAME);
+        const cachedResponse = await cache.match(cacheKey);
+
+        if (cachedResponse && cachedResponse.ok) {
+          const blob = await cachedResponse.blob();
+          if (blob && blob.size > 200) {
+            if (activeBlobUrlRef.current) {
+              URL.revokeObjectURL(activeBlobUrlRef.current);
+            }
+            const objectUrl = URL.createObjectURL(blob);
+            activeBlobUrlRef.current = objectUrl;
+
+            if (isMountedRef.current) {
+              setCurrentSrc(objectUrl);
+              setLoaded(true);
+              setHasError(false);
+              setIsRetrying(false);
+              setSecondsUntilRetry(0);
+              return;
+            }
+          }
+        }
+      } catch (cacheErr) {
+        console.warn('Cache check notice (falling back to network):', cacheErr);
+      }
+    }
+
+    // Step B: Not in cache - determine URL to load based on retry attempt
+    const endpoints = getDriveEndpoints(targetFileId);
+    const endpointIndex = currentRetry % endpoints.length;
+    const baseEndpoint = endpoints[endpointIndex];
+    // Add cache-busting timestamp on higher retries to prevent browser serving a stale failure
+    const finalUrl = currentRetry > 0
+      ? `${baseEndpoint}${baseEndpoint.includes('?') ? '&' : '?'}retry=${currentRetry}&t=${Date.now()}`
+      : baseEndpoint;
+
+    if (isMountedRef.current) {
+      setCurrentSrc(finalUrl);
+      setIsRetrying(false);
+      setSecondsUntilRetry(0);
+    }
+  }, []);
+
+  // Save successful network response to cache
+  const cacheImageBlob = useCallback(async (targetFileId: string, url: string) => {
+    if (typeof window === 'undefined' || !('caches' in window)) return;
+    if (url.startsWith('blob:')) return; // Already loaded from blob cache
+
+    try {
+      const res = await fetch(url, { mode: 'cors' });
+      if (res.ok) {
+        const blob = await res.blob();
+        if (blob && blob.size > 200) {
+          const cache = await caches.open(DRIVE_CACHE_NAME);
+          const cacheKey = `https://ucds.ca/drive-cache/${targetFileId}`;
+          const responseToCache = new Response(blob, {
+            headers: {
+              'Content-Type': blob.type || 'image/jpeg',
+              'Cache-Control': 'public, max-age=2592000', // 30 days
+            },
+          });
+          await cache.put(cacheKey, responseToCache);
+        }
+      }
+    } catch {
+      // Non-fatal: Image still rendered directly in <img> tag
+    }
+  }, []);
+
+  // Initial load on mount or when fileId changes
+  useEffect(() => {
+    isMountedRef.current = true;
+    setLoaded(false);
+    setHasError(false);
+    setRetryCount(0);
+    setSecondsUntilRetry(0);
+    setIsRetrying(false);
+
+    checkCacheAndLoad(fileId, 0);
+
+    return () => {
+      isMountedRef.current = false;
+      clearAllTimers();
+      if (activeBlobUrlRef.current) {
+        URL.revokeObjectURL(activeBlobUrlRef.current);
+        activeBlobUrlRef.current = null;
+      }
+    };
+  }, [fileId, checkCacheAndLoad]);
+
+  // Image load success handler
+  const handleLoadSuccess = () => {
+    if (!isMountedRef.current) return;
+    setLoaded(true);
+    setHasError(false);
+    setIsRetrying(false);
+    setSecondsUntilRetry(0);
+    clearAllTimers();
+
+    // Cache the image for future visits if not already loaded from blob
+    if (currentSrc && !currentSrc.startsWith('blob:')) {
+      cacheImageBlob(fileId, currentSrc);
+    }
+  };
+
+  // Image load error handler: retry every 15s up to 3 tries
   const handleError = () => {
-    if (currentSrc.includes('lh3.googleusercontent.com')) {
-      setCurrentSrc(getDriveThumbnailUrl(fileId));
+    if (!isMountedRef.current) return;
+    clearAllTimers();
+
+    if (retryCount < 3) {
+      const nextRetry = retryCount + 1;
+      setRetryCount(nextRetry);
+      setIsRetrying(true);
+      setSecondsUntilRetry(15);
+
+      // 1-second interval to update countdown
+      countdownIntervalRef.current = setInterval(() => {
+        if (!isMountedRef.current) return;
+        setSecondsUntilRetry((prev) => {
+          if (prev <= 1) {
+            if (countdownIntervalRef.current) {
+              clearInterval(countdownIntervalRef.current);
+              countdownIntervalRef.current = null;
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      // 15-second timer to initiate next retry
+      timerRef.current = setTimeout(() => {
+        if (!isMountedRef.current) return;
+        checkCacheAndLoad(fileId, nextRetry);
+      }, 15000);
     } else {
+      // All 3 retries exhausted
       setHasError(true);
       setLoaded(true);
+      setIsRetrying(false);
+      setSecondsUntilRetry(0);
     }
+  };
+
+  // Manual retry handler if all 3 retries fail
+  const handleManualRetry = () => {
+    setLoaded(false);
+    setHasError(false);
+    setRetryCount(0);
+    setSecondsUntilRetry(0);
+    setIsRetrying(false);
+    checkCacheAndLoad(fileId, 0);
   };
 
   return (
     <div className={`relative overflow-hidden ${wrapperClassName}`}>
-      {!loaded && !hasError && <div className="history-img-skeleton" aria-hidden="true" />}
+      {/* Loading Skeleton & Retry Countdown Badge */}
+      {!loaded && !hasError && (
+        <>
+          <div className="history-img-skeleton" aria-hidden="true" />
+          {isRetrying && secondsUntilRetry > 0 && (
+            <div className="history-img-retry-indicator">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+              <span>Retrying ({retryCount}/3) in {secondsUntilRetry}s...</span>
+            </div>
+          )}
+        </>
+      )}
+
       {!hasError ? (
-        <img
-          src={currentSrc}
-          alt={alt}
-          loading="lazy"
-          onLoad={() => setLoaded(true)}
-          onError={handleError}
-          className={`${className} transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-        />
+        currentSrc ? (
+          <img
+            src={currentSrc}
+            alt={alt}
+            loading="lazy"
+            onLoad={handleLoadSuccess}
+            onError={handleError}
+            className={`${className} transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+          />
+        ) : null
       ) : (
-        <div className="w-full h-full min-h-[220px] flex flex-col items-center justify-center p-4 bg-slate-200/50 dark:bg-slate-800/50 text-slate-500 text-xs text-center">
-          <BookOpen className="w-6 h-6 mb-2 opacity-50" />
-          <span>Historical Archive Record</span>
+        <div className="w-full h-full min-h-[220px] flex flex-col items-center justify-center p-4 bg-slate-200/50 dark:bg-slate-800/50 text-slate-500 text-xs text-center space-y-2">
+          <BookOpen className="w-6 h-6 opacity-50" />
+          <span className="font-semibold">Historical Archive Record</span>
+          <p className="text-[11px] opacity-75 max-w-[200px]">
+            Unable to load from cloud storage after 3 attempts.
+          </p>
+          <button
+            type="button"
+            onClick={handleManualRetry}
+            className="mt-1 px-3 py-1 rounded-md text-xs font-semibold bg-[#0075A2] text-white hover:bg-[#0075A2]/90 transition-colors pointer-events-auto"
+          >
+            Retry Loading
+          </button>
         </div>
       )}
     </div>
@@ -623,12 +824,12 @@ export const OurStoryHistory: React.FC = () => {
           <div className="max-w-xl ml-auto mb-28 anim-slide-right delay-2">
             <div className="history-aperture-window float-gentle-3 aspect-[16/10]">
               <DriveImage
-                fileId={DRIVE_IMAGES.ninetiesImage}
-                alt="1990s University of Calgary Debate Era"
+                fileId={DRIVE_IMAGES.nenshi_1992}
+                alt="Naheed Nenshi Debating in 1992"
                 className="history-aperture-img"
               />
               <div className="absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-black/90 via-black/55 to-transparent text-white text-sm">
-                <span className="font-bold">1990s Debate Union:</span> The golden era of parliamentary competition where Calgary orators regularly captured top speaker breaks.
+                <span className="font-bold">Naheed Nenshi in 1992:</span> University of Calgary Debating Society member and future Mayor of Calgary, and current leader of the Alberta NDP.
               </div>
             </div>
           </div>

@@ -71,10 +71,57 @@ async function syncAll() {
   const collections = await db.listCollections();
   console.log(`✓ Firestore connected successfully. Active collections count: ${collections.length}`);
 
-  console.log('\n--- 3. Verifying Authentication Service ---');
+  console.log('\n--- 3. Verifying Authentication Service & Authorized Domains ---');
   const auth = getAuth(app);
   const users = await auth.listUsers(5);
   console.log(`✓ Firebase Auth connected successfully. Total registered users: ${users.users.length}`);
+
+  try {
+    const credential = app.options.credential;
+    const tokenObj = await credential.getAccessToken();
+    const desiredDomains = [
+      'localhost',
+      'ucds-f5db9.firebaseapp.com',
+      'ucds-f5db9.web.app',
+      'ucds.ca',
+      'www.ucds.ca',
+      'university-of-calgary-debate-society.github.io'
+    ];
+
+    const configUrl = `https://identitytoolkit.googleapis.com/admin/v2/projects/${serviceAccount.project_id}/config`;
+    const getRes = await fetch(configUrl, {
+      headers: { Authorization: `Bearer ${tokenObj.access_token}` },
+    });
+
+    if (getRes.ok) {
+      const currentConfig = await getRes.json();
+      const currentDomains = currentConfig.authorizedDomains || [];
+      const missingDomains = desiredDomains.filter((d) => !currentDomains.includes(d));
+
+      if (missingDomains.length > 0) {
+        console.log(`Adding missing authorized domains: ${missingDomains.join(', ')}`);
+        const updatedList = Array.from(new Set([...currentDomains, ...desiredDomains]));
+        const patchRes = await fetch(`${configUrl}?updateMask=authorizedDomains`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${tokenObj.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ authorizedDomains: updatedList }),
+        });
+
+        if (patchRes.ok) {
+          console.log(`✓ Authorized domains updated in Firebase Auth: ${updatedList.join(', ')}`);
+        } else {
+          console.warn('⚠️ Warning: Failed to patch authorized domains:', await patchRes.text());
+        }
+      } else {
+        console.log(`✓ Authorized domains verified: ${currentDomains.join(', ')}`);
+      }
+    }
+  } catch (domainErr) {
+    console.warn('⚠️ Non-fatal: Could not verify authorized domains via Identity Toolkit API:', domainErr.message);
+  }
 
   console.log('\n--- 4. Initializing App Check Service ---');
   const appCheck = getAppCheck(app);

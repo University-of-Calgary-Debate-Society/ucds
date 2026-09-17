@@ -142,7 +142,15 @@ export const MemberRegister: React.FC = () => {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Google sign up failed.';
-      setError(msg);
+      if (msg.includes('unauthorized-domain')) {
+        setError('Domain authorization in progress for ucds.ca. Please refresh and try again.');
+      } else if (msg.includes('popup-blocked')) {
+        setError('Google sign-in popup was blocked. Please enable popups for ucds.ca.');
+      } else if (msg.includes('popup-closed-by-user')) {
+        setError('Sign-up cancelled before completing.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setIsAuthSubmitting(false);
     }
@@ -178,6 +186,8 @@ export const MemberRegister: React.FC = () => {
       const msg = err instanceof Error ? err.message : 'Registration failed.';
       if (msg.includes('email-already-in-use')) {
         setError('An account with this email already exists. Please log in.');
+      } else if (msg.includes('unauthorized-domain')) {
+        setError('Domain authorization in progress for ucds.ca. Please refresh and try again.');
       } else {
         setError(msg);
       }

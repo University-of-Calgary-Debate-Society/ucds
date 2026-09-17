@@ -1645,3 +1645,64 @@
     animation: none !important;
   }
 }
+
+/* ==========================================================================
+   HISTORY IMAGE SKELETON & RETRY INDICATOR STYLES
+   ========================================================================== */
+.history-img-skeleton {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(226, 232, 240, 0.45) 0%,
+    rgba(241, 245, 249, 0.8) 50%,
+    rgba(226, 232, 240, 0.45) 100%
+  );
+  background-size: 200% 100%;
+  animation: historySkeletonShimmer 1.8s ease-in-out infinite;
+  z-index: 1;
+}
+
+.dark .history-img-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(30, 41, 59, 0.55) 0%,
+    rgba(51, 65, 85, 0.85) 50%,
+    rgba(30, 41, 59, 0.55) 100%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes historySkeletonShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.history-img-retry-indicator {
+  position: absolute;
+  bottom: 0.85rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(83, 175, 208, 0.4);
+  border-radius: 9999px;
+  color: #38bdf8;
+  font-size: 0.725rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  z-index: 5;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  white-space: nowrap;
+}

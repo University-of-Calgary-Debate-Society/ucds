@@ -43,7 +43,7 @@ export const RotatingBackground: React.FC = () => {
 
   const totalCards = CONCAVE_PANORAMA.length;
   // Radius calibrated with 1150px card width to guarantee 150px clearance gap and zero clipping
-  const radius = 3700;
+  const radius = 3500;
 
   return (
     <>
