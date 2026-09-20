@@ -747,6 +747,17 @@
   right: -42px;
 }
 
+/* Zero-scroll root locks when viewing the mobile homepage */
+.home-no-scroll,
+html:has(.home-hero-container),
+body:has(.home-hero-container) {
+  overflow: hidden !important;
+  height: 100dvh !important;
+  height: 100vh !important;
+  padding-bottom: 0 !important;
+  overscroll-behavior: none !important;
+}
+
 /* =========================================================================
    Mobile Viewport & Screen Responsiveness (<= 768px)
    ========================================================================= */
@@ -760,47 +771,39 @@
     display: block !important;
   }
 
+  /* Completely hide the 4 floating mascot/heritage badges on mobile screens */
+  .floating-badge-anchor {
+    display: none !important;
+  }
+
+  /* Make the homepage exactly fill the mobile viewport with ZERO scrolling */
   .home-hero-container {
-    padding: 5.5rem 1rem 3rem;
-    overflow-x: hidden;
+    height: 100dvh !important;
+    height: 100vh !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    padding-top: max(4.5rem, calc(env(safe-area-inset-top, 0px) + 4rem)) !important;
+    padding-bottom: max(5.25rem, calc(env(safe-area-inset-bottom, 0px) + 5rem)) !important;
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    touch-action: none !important;
   }
 
   .hero-content-wrapper {
     max-width: 100%;
-    padding: 0 0.5rem;
+    padding: 0;
+    margin: auto 0;
   }
 
   .hero-title-part2 {
     font-size: clamp(2.1rem, 9.2vw, 3.4rem);
-  }
-
-  /* Compact responsive mascot & heritage badges */
-  .badge-rex {
-    width: 72px;
-    height: 72px;
-    bottom: -22px;
-    left: -8px;
-  }
-
-  .badge-canada {
-    width: 70px;
-    height: 70px;
-    top: -20px;
-    right: -8px;
-  }
-
-  .badge-ucalgary {
-    width: 68px;
-    height: 68px;
-    top: -20px;
-    left: -8px;
-  }
-
-  .badge-gavel {
-    width: 68px;
-    height: 68px;
-    bottom: -20px;
-    right: -8px;
   }
 
   /* Button stacking for small touch screens */

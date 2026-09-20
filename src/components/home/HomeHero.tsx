@@ -86,6 +86,27 @@ export const HomeHero: React.FC = () => {
     setGavelSpeech('*GAVEL NOISES*');
   };
 
+  // Prevent scrolling on mobile homepage
+  useEffect(() => {
+    const handleViewportLock = () => {
+      if (window.innerWidth <= 768) {
+        document.body.classList.add('home-no-scroll');
+        document.documentElement.classList.add('home-no-scroll');
+      } else {
+        document.body.classList.remove('home-no-scroll');
+        document.documentElement.classList.remove('home-no-scroll');
+      }
+    };
+
+    handleViewportLock();
+    window.addEventListener('resize', handleViewportLock, { passive: true });
+    return () => {
+      document.body.classList.remove('home-no-scroll');
+      document.documentElement.classList.remove('home-no-scroll');
+      window.removeEventListener('resize', handleViewportLock);
+    };
+  }, []);
+
   return (
     <div className="home-hero-container">
       {/* Background Rotating 3D Concave Panoramic Stage */}
@@ -104,10 +125,10 @@ export const HomeHero: React.FC = () => {
           </div>
         </div>
 
-        {/* Floating & Interactive Badges around title card */}
+        {/* Floating & Interactive Badges around title card (Hidden on Mobile) */}
 
         {/* Badge 1: Canada Flag (top-right) */}
-        <div className="floating-badge-anchor badge-canada" title="Click me!">
+        <div className="floating-badge-anchor badge-canada hidden md:block" title="Click me!">
           {canadaSpeech && (
             <div className="badge-speech-bubble" role="status">
               {canadaSpeech}
@@ -123,7 +144,7 @@ export const HomeHero: React.FC = () => {
         </div>
 
         {/* Badge 2: Rex Mascot (bottom-left) */}
-        <div className="floating-badge-anchor badge-rex" title="Click me!">
+        <div className="floating-badge-anchor badge-rex hidden md:block" title="Click me!">
           {/* Rex 10-Click Gnome Easter Egg (Appears directly above Rex for 0.4s) */}
           {showGnome && (
             <div className="rex-gnome-amateur-popup" aria-hidden="true">
@@ -150,7 +171,7 @@ export const HomeHero: React.FC = () => {
         </div>
 
         {/* Badge 3: UCalgary Coat of Arms (top-left) */}
-        <div className="floating-badge-anchor badge-ucalgary" title="Click me!">
+        <div className="floating-badge-anchor badge-ucalgary hidden md:block" title="Click me!">
           {ucalgarySpeech && (
             <div className="badge-speech-bubble" role="status">
               {ucalgarySpeech}
@@ -166,7 +187,7 @@ export const HomeHero: React.FC = () => {
         </div>
 
         {/* Badge 4: Gavel (bottom-right) */}
-        <div className="floating-badge-anchor badge-gavel" title="Click me!">
+        <div className="floating-badge-anchor badge-gavel hidden md:block" title="Click me!">
           {gavelSpeech && (
             <div className="badge-speech-bubble" role="status">
               {gavelSpeech}
