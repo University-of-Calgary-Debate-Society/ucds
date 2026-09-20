@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   GraduationCap,
   Mail,
@@ -61,14 +61,14 @@ export const ConvertUcdsModal: React.FC<ConvertUcdsModalProps> = ({
   const [warningAcknowledged, setWarningAcknowledged] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({});
 
-  const handleSmoothClose = () => {
+  const handleSmoothClose = useCallback(() => {
     if (isSubmitting || isClosing) return;
     setIsClosing(true);
     setTimeout(() => {
       onClose();
       setIsClosing(false);
     }, 220);
-  };
+  }, [isSubmitting, isClosing, onClose]);
 
   // Close modal on Escape key press
   useEffect(() => {
@@ -81,7 +81,7 @@ export const ConvertUcdsModal: React.FC<ConvertUcdsModalProps> = ({
       document.addEventListener('keydown', handleKeyDown);
     }
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, isSubmitting, isClosing]);
+  }, [isOpen, isSubmitting, handleSmoothClose]);
 
   // Reset when opening
   useEffect(() => {

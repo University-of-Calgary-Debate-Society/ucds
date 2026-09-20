@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AlertTriangle, Trash2, X, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -21,14 +21,14 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [requiresReauth, setRequiresReauth] = useState(false);
 
-  const handleSmoothClose = () => {
+  const handleSmoothClose = useCallback(() => {
     if (isDeleting || isClosing) return;
     setIsClosing(true);
     setTimeout(() => {
       onClose();
       setIsClosing(false);
     }, 220);
-  };
+  }, [isDeleting, isClosing, onClose]);
 
   // Close modal on Escape key press
   useEffect(() => {
@@ -41,7 +41,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
       document.addEventListener('keydown', handleKeyDown);
     }
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, isDeleting, isClosing]);
+  }, [isOpen, isDeleting, handleSmoothClose]);
 
   // Reset error states when modal opens
   useEffect(() => {

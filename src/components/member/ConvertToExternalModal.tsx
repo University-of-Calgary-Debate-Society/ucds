@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Globe, X, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { convertToExternalMember } from '@/services/userService';
@@ -24,14 +24,14 @@ export const ConvertToExternalModal: React.FC<ConvertToExternalModalProps> = ({
   const [isClosing, setIsClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSmoothClose = () => {
+  const handleSmoothClose = useCallback(() => {
     if (isSubmitting || isClosing) return;
     setIsClosing(true);
     setTimeout(() => {
       onClose();
       setIsClosing(false);
     }, 220);
-  };
+  }, [isSubmitting, isClosing, onClose]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -43,7 +43,7 @@ export const ConvertToExternalModal: React.FC<ConvertToExternalModalProps> = ({
       document.addEventListener('keydown', handleKeyDown);
     }
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, isSubmitting, isClosing]);
+  }, [isOpen, isSubmitting, handleSmoothClose]);
 
   useEffect(() => {
     if (isOpen) {

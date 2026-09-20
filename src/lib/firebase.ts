@@ -1,13 +1,6 @@
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth, GoogleAuthProvider } from 'firebase/auth';
-import {
-  getFirestore,
-  initializeFirestore,
-  persistentLocalCache,
-  persistentMultipleTabManager,
-  memoryLocalCache,
-  type Firestore,
-} from 'firebase/firestore';
+import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics';
 import { initializeAppCheck, ReCaptchaV3Provider, type AppCheck } from 'firebase/app-check';
 
@@ -51,25 +44,11 @@ try {
     }
 
     auth = getAuth(app);
-    if (typeof window !== 'undefined') {
-      try {
-        db = initializeFirestore(app, {
-          localCache: persistentLocalCache({
-            tabManager: persistentMultipleTabManager(),
-          }),
-        });
-      } catch (cacheErr) {
-        console.warn('Persistent cache initialization notice, falling back to memory cache:', cacheErr);
-        try {
-          db = initializeFirestore(app, {
-            localCache: memoryLocalCache(),
-          });
-        } catch {
-          db = getFirestore(app);
-        }
-      }
-    } else {
+    try {
       db = getFirestore(app);
+    } catch (dbErr) {
+      console.warn('Firestore initialization notice:', dbErr);
+      db = null;
     }
     googleProvider = new GoogleAuthProvider();
 
