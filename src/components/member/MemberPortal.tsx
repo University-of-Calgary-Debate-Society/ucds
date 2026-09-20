@@ -24,8 +24,12 @@ import {
   CheckCheck,
   Building2,
   Lock,
+  Trash2,
+  RefreshCw,
+  Globe,
   Loader2,
 } from 'lucide-react';
+import { ConvertToExternalModal } from './ConvertToExternalModal';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   subscribeUserProfile,
@@ -44,9 +48,10 @@ import {
   DEFAULT_MEMBERSHIP_FEE_ID,
   type UserPayableItem,
 } from '@/services/paymentsService';
-import { LoadingScreen } from '@/components/common';
+import { LoadingScreen, DeleteAccountModal } from '@/components/common';
 import { FloatingAlert } from './FloatingAlert';
 import { PayPalButton } from './PayPalButton';
+import { ConvertUcdsModal } from './ConvertUcdsModal';
 import { useSmoothNavigate } from '@/utils/navigation';
 
 type PortalTab = 'profile' | 'mailing' | 'forms' | 'registrations' | 'payments';
@@ -94,12 +99,23 @@ export const MemberPortal: React.FC = () => {
 
   // Graduation Modal State (UCDS Only)
   const [isGradModalOpen, setIsGradModalOpen] = useState(false);
+  const [isGradModalClosing, setIsGradModalClosing] = useState(false);
   const [gradStep, setGradStep] = useState<number>(0);
   const [isGraduating, setIsGraduating] = useState(false);
 
   // Sign Out Confirmation Modal State
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+  const [isSignOutModalClosing, setIsSignOutModalClosing] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+
+  // Delete Account Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // Convert to UCDS Member Modal State
+  const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
+
+  // Convert to External Member Modal State
+  const [isConvertToExternalModalOpen, setIsConvertToExternalModalOpen] = useState(false);
 
   // Mailing list subscriptions state
   const [subscriberLists, setSubscriberLists] = useState<string[]>([]);
@@ -113,7 +129,9 @@ export const MemberPortal: React.FC = () => {
       isInteracModalOpen ||
       isRolesModalOpen ||
       isGradModalOpen ||
-      isSignOutModalOpen;
+      isSignOutModalOpen ||
+      isDeleteModalOpen ||
+      isConvertModalOpen;
 
     if (isAnyModalOpen) {
       const originalOverflow = document.body.style.overflow;
@@ -129,6 +147,9 @@ export const MemberPortal: React.FC = () => {
     isRolesModalOpen,
     isGradModalOpen,
     isSignOutModalOpen,
+    isDeleteModalOpen,
+    isConvertModalOpen,
+    isConvertToExternalModalOpen,
   ]);
 
   // Feedback alerts
@@ -137,12 +158,16 @@ export const MemberPortal: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   // Helper to load dynamic payable items from Firestore
-  const loadUserPayments = async (userProf: UserProfile, email: string) => {
+  const loadUserPayments = async (
+    userProf: UserProfile,
+    email: string,
+    forceRefresh = false
+  ) => {
     try {
       setLoadingPayments(true);
       await ensureMembershipFeeDoc();
       await syncUserMembershipFeeStatus(userProf, email);
-      const items = await getUserPayableItems(userProf, email);
+      const items = await getUserPayableItems(userProf, email, forceRefresh);
       setPayableItems(items);
       if (items.length > 0) {
         setSelectedPayableId((prev) => {
@@ -251,6 +276,25 @@ export const MemberPortal: React.FC = () => {
     });
   };
 
+  const handleCloseGradModal = () => {
+    if (isGraduating || isGradModalClosing) return;
+    setIsGradModalClosing(true);
+    setTimeout(() => {
+      setIsGradModalOpen(false);
+      setIsGradModalClosing(false);
+      setGradStep(0);
+    }, 220);
+  };
+
+  const handleCloseSignOutModal = () => {
+    if (isSigningOut || isSignOutModalClosing) return;
+    setIsSignOutModalClosing(true);
+    setTimeout(() => {
+      setIsSignOutModalOpen(false);
+      setIsSignOutModalClosing(false);
+    }, 220);
+  };
+
   // Graduation Multi-Click Handler
   const handleGraduationStep = async () => {
     if (!user || !profile) return;
@@ -274,8 +318,12 @@ export const MemberPortal: React.FC = () => {
 
       setProfile((prev) => (prev ? { ...prev, type: updatedRoles } : null));
       setRoles(updatedRoles);
-      setIsGradModalOpen(false);
-      setGradStep(0);
+      setIsGradModalClosing(true);
+      setTimeout(() => {
+        setIsGradModalOpen(false);
+        setIsGradModalClosing(false);
+        setGradStep(0);
+      }, 220);
       setSuccess('Congratulations! You have officially graduated and are now registered as an Alumnus.');
     } catch (err: unknown) {
       console.error('Failed to update graduation status:', err);
@@ -527,29 +575,16 @@ export const MemberPortal: React.FC = () => {
                 <span>{profile.isUCDS ? 'UCalgary Member' : 'External Member'}</span>
               </span>
 
-              <span className={`status-tag ${isDuesExempt || profile.isPaid ? 'status-tag-active' : 'status-tag-pending'}`}>
-                <CreditCard className="w-3.5 h-3.5" />
-                <span>
-                  {isAlumni
-                    ? 'Alumni (Dues Exempt)'
-                    : profile.isExecutive
-                      ? 'Executive (Dues Exempt)'
-                      : profile.isPaid
-                        ? 'Membership Dues Paid'
-                        : 'Dues Unpaid'}
-                </span>
-              </span>
-
               {profile.isExecutive && (
-                <span className="status-tag status-tag-active bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border-purple-300">
-                  <ShieldCheck className="w-3.5 h-3.5" />
+                <span className="status-tag">
+                  <ShieldCheck className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                   <span>Executive Officer</span>
                 </span>
               )}
 
               {isAlumni && (
-                <span className="status-tag status-tag-active bg-amber-100 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border-amber-300">
-                  <Award className="w-3.5 h-3.5" />
+                <span className="status-tag">
+                  <Award className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
                   <span>Alumnus</span>
                 </span>
               )}
@@ -914,6 +949,53 @@ export const MemberPortal: React.FC = () => {
                       )}
                     </div>
                   </div>
+
+                  {/* Graduation Multi-Click Action (Moved to Account Overview below Participation Roles) */}
+                  {profile.isUCDS && !isAlumni && (
+                    <div className="sm:col-span-2 pt-3.5 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">
+                          Academic Graduation
+                        </span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Finished your degree at UCalgary? Mark your graduation to join the society's alumni roster.
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setGradStep(0);
+                          setIsGradModalOpen(true);
+                        }}
+                        className="btn-grad-confirm py-2.5 px-5 text-xs font-black rounded-xl border border-[#0075A2] text-[#0075A2] dark:text-[#53afd0] bg-[#0075A2]/10 hover:bg-[#0075A2] hover:text-white dark:hover:bg-[#53afd0] dark:hover:text-[#101426] transition flex items-center gap-2 cursor-pointer shadow-xs hover:-translate-y-0.5 active:translate-y-0"
+                      >
+                        <GraduationCap className="w-4 h-4" />
+                        <span>I've Graduated!</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Switch to External Account action for UCDS Members */}
+                  {profile.isUCDS && (
+                    <div className="sm:col-span-2 pt-3.5 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">
+                          External Debater Affiliation
+                        </span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                          No longer an active student at UCalgary or debating under another university/institution?
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsConvertToExternalModalOpen(true)}
+                        className="py-2.5 px-5 text-xs font-black rounded-xl border border-amber-500/40 text-amber-700 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-500 dark:hover:text-[#101426] transition flex items-center gap-2 cursor-pointer shadow-xs hover:-translate-y-0.5 active:translate-y-0"
+                      >
+                        <Globe className="w-4 h-4" />
+                        <span>Switch to External Member Account</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1160,13 +1242,25 @@ export const MemberPortal: React.FC = () => {
         {/* TAB 5: MULTI-ITEM PAYMENTS TAB (Dynamic from Firestore Payments Collection) */}
         {activeTab === 'payments' && (
           <div key="payments" className="member-card max-w-none animate-viewFadeIn space-y-6">
-            <div className="pb-4 border-b border-[rgba(28,36,76,0.15)] dark:border-[rgba(83,175,208,0.22)]">
-              <h2 className="member-card-title text-2xl text-[#101426] dark:text-[#F6F6F6]">
-                Membership Dues & Payments
-              </h2>
-              <p className="text-xs font-bold text-[#0075A2] dark:text-[#53afd0] mt-0.5">
-                Select an item below to view details and proceed with secure online payment or bank transfer.
-              </p>
+            <div className="pb-4 border-b border-[rgba(28,36,76,0.15)] dark:border-[rgba(83,175,208,0.22)] flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="member-card-title text-2xl text-[#101426] dark:text-[#F6F6F6]">
+                  Membership Dues & Payments
+                </h2>
+                <p className="text-xs font-bold text-[#0075A2] dark:text-[#53afd0] mt-0.5">
+                  Select an item below to view details and proceed with secure online payment or bank transfer.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => user && profile && loadUserPayments(profile, profile['email-preferred'] || user.email || '', true)}
+                disabled={loadingPayments}
+                className="inline-flex items-center gap-1.5 py-1.5 px-3.5 rounded-xl text-xs font-bold bg-[#0075A2]/10 dark:bg-[#53afd0]/20 hover:bg-[#0075A2]/20 text-[#0075A2] dark:text-[#53afd0] border border-[#0075A2]/30 dark:border-[#53afd0]/40 transition shadow-xs cursor-pointer disabled:opacity-50"
+                title="Refresh Payments"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingPayments ? 'animate-spin' : ''}`} />
+                <span>{loadingPayments ? 'Refreshing...' : 'Refresh Payments'}</span>
+              </button>
             </div>
 
             {/* Payable Items Catalog Selector */}
@@ -1251,24 +1345,44 @@ export const MemberPortal: React.FC = () => {
               {/* Status Notice */}
               {selectedItem.isMembershipDues ? (
                 profile.isPaid || isDuesExempt ? (
-                  <div className="p-4 rounded-xl bg-emerald-100/90 dark:bg-emerald-950/60 border border-emerald-400 dark:border-emerald-700 flex items-center gap-3 text-emerald-950 dark:text-emerald-100">
-                    <Check className="w-5 h-5 flex-shrink-0 text-emerald-700 dark:text-emerald-400" />
-                    <div>
-                      <p className="font-title font-black text-sm">
-                        {isAlumni
-                          ? 'Alumni Lifetime Membership Exemption Active'
-                          : profile.isExecutive
-                            ? 'Executive Officer Dues Exemption Active'
+                  <div className="p-4 rounded-xl bg-emerald-100/90 dark:bg-emerald-950/60 border border-emerald-400 dark:border-emerald-700 flex flex-col gap-3 text-emerald-950 dark:text-emerald-100">
+                    <div className="flex items-start gap-3">
+                      <Check className="w-5 h-5 flex-shrink-0 text-emerald-700 dark:text-emerald-400 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-title font-black text-sm">
+                          {isAlumni
+                            ? 'Alumni Lifetime Membership Exemption Active'
+                            : profile.isExecutive
+                              ? 'Executive Officer Dues Exemption Active'
+                              : !profile.isUCDS
+                                ? 'External / General Account — No Society Dues Required'
+                                : 'Annual Society Membership Dues Fully Paid & Verified'}
+                        </p>
+                        <p className="text-xs font-semibold opacity-95 mt-0.5">
+                          {profile.isPaid
+                            ? 'Your account is verified for voting rights and travel tournament roster selection.'
                             : !profile.isUCDS
-                              ? 'External / General Account — No Society Dues Required'
-                              : 'Annual Society Membership Dues Fully Paid & Verified'}
-                      </p>
-                      <p className="text-xs font-semibold opacity-95">
-                        {profile.isPaid
-                          ? 'Your account is verified for voting rights and travel tournament roster selection.'
-                          : 'No payment is required for this account status.'}
-                      </p>
+                              ? 'External members do not pay society dues. To join the competitive travel roster and gain voting rights, you can convert to a UCDS member.'
+                              : 'No payment is required for this account status.'}
+                        </p>
+                      </div>
                     </div>
+
+                    {!profile.isUCDS && (
+                      <div className="mt-1 pt-3 border-t border-emerald-300 dark:border-emerald-800 flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-xs font-bold text-emerald-950 dark:text-emerald-100">
+                          Are you a University of Calgary student?
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setIsConvertModalOpen(true)}
+                          className="inline-flex items-center gap-1.5 py-1.5 px-3.5 rounded-xl text-xs font-bold bg-[#0075A2] hover:bg-[#0075A2]/90 text-white shadow-xs transition cursor-pointer"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Convert to UCDS Member</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ) : selectedItem.isUpcoming ? (
                   <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-300 dark:border-blue-800 flex items-center gap-3 text-blue-950 dark:text-blue-200">
@@ -1445,25 +1559,33 @@ export const MemberPortal: React.FC = () => {
           </div>
         )}
 
-        {/* Footer Actions: "I've Graduated!" (UCDS Non-Alumni Only) & "Sign Out" */}
-        <div className="w-full flex flex-wrap items-center justify-center gap-4 pt-4 pb-8">
-          {profile.isUCDS && !isAlumni && (
+        {/* Footer Actions: Delete Account, Convert to UCDS (if external), & Sign Out */}
+        <div className="w-full flex flex-wrap items-center justify-end gap-3 pt-4 pb-8">
+          {/* Delete Account Button (placed to the left) */}
+          <button
+            type="button"
+            className="btn-form-back py-2.5 px-5 text-xs font-bold text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 border-slate-300 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2 shadow-xs cursor-pointer hover:-translate-y-0.5 active:translate-y-0 transition mr-auto"
+            onClick={() => setIsDeleteModalOpen(true)}
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>Delete Account</span>
+          </button>
+
+          {/* Convert to UCDS Member (for External members, placed at bottom right beside Sign Out) */}
+          {!profile.isUCDS && (
             <button
               type="button"
-              onClick={() => {
-                setGradStep(0);
-                setIsGradModalOpen(true);
-              }}
-              className="btn-bulk-toggle py-3 px-6 text-sm font-extrabold flex items-center gap-2 border-[#0075A2] text-[#0075A2] dark:text-[#53afd0]"
+              onClick={() => setIsConvertModalOpen(true)}
+              className="py-2.5 px-5 rounded-xl text-xs font-black bg-gradient-to-r from-[#0075A2] to-[#1C244C] hover:from-[#53afd0] hover:to-[#0075A2] text-white shadow-md shadow-[#0075A2]/20 flex items-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 transition"
             >
-              <GraduationCap className="w-4 h-4" />
-              <span>I've Graduated!</span>
+              <Sparkles className="w-4 h-4" />
+              <span>Convert to UCDS Member</span>
             </button>
           )}
 
           <button
             type="button"
-            className="btn-form-back py-3 px-8 text-sm font-extrabold text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2 shadow-sm"
+            className="btn-form-back py-2.5 px-6 text-xs font-black text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2 shadow-xs cursor-pointer hover:-translate-y-0.5 active:translate-y-0 transition"
             onClick={() => setIsSignOutModalOpen(true)}
           >
             <LogOut className="w-4 h-4" />
@@ -1824,9 +1946,12 @@ export const MemberPortal: React.FC = () => {
       {/* Graduation Confirmation Popup Modal (High-Contrast Light and Dark Mode) */}
       {isGradModalOpen &&
         createPortal(
-          <div className="modal-org-overlay" onClick={() => setIsGradModalOpen(false)}>
+          <div
+            className={`modal-org-overlay ${isGradModalClosing ? 'closing' : ''}`}
+            onClick={handleCloseGradModal}
+          >
             <div
-              className="modal-org-content max-w-lg p-6 sm:p-7 space-y-5"
+              className={`modal-org-content max-w-lg p-6 sm:p-7 space-y-5 ${isGradModalClosing ? 'closing' : ''}`}
               onClick={(e) => e.stopPropagation()}
               role="dialog"
               aria-modal="true"
@@ -1848,8 +1973,8 @@ export const MemberPortal: React.FC = () => {
 
                 <button
                   type="button"
-                  onClick={() => setIsGradModalOpen(false)}
-                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                  onClick={handleCloseGradModal}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer"
                   aria-label="Close dialog"
                 >
                   <X className="w-5 h-5" />
@@ -1870,11 +1995,8 @@ export const MemberPortal: React.FC = () => {
               <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
                 <button
                   type="button"
-                  className="btn-form-back w-full sm:w-auto py-2.5 px-5 text-xs font-bold"
-                  onClick={() => {
-                    setIsGradModalOpen(false);
-                    setGradStep(0);
-                  }}
+                  className="btn-form-back w-full sm:w-auto py-2.5 px-5 text-xs font-bold hover:-translate-y-0.5 active:scale-95 transition-all cursor-pointer"
+                  onClick={handleCloseGradModal}
                 >
                   Cancel
                 </button>
@@ -1884,7 +2006,7 @@ export const MemberPortal: React.FC = () => {
                   type="button"
                   disabled={isGraduating}
                   onClick={handleGraduationStep}
-                  className={`btn-grad-confirm w-full sm:w-auto py-2.5 px-6 text-xs font-black rounded-xl transition-all duration-200 flex items-center justify-center gap-2 ${gradStep === 0
+                  className={`btn-grad-confirm w-full sm:w-auto py-2.5 px-6 text-xs font-black rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${gradStep === 0
                       ? 'bg-[#0075A2] text-white hover:bg-[#1C244C]'
                       : gradStep === 1
                         ? 'bg-amber-600 text-white hover:bg-amber-700 shadow-md'
@@ -1904,11 +2026,11 @@ export const MemberPortal: React.FC = () => {
       {isSignOutModalOpen &&
         createPortal(
           <div
-            className="modal-org-overlay"
-            onClick={() => !isSigningOut && setIsSignOutModalOpen(false)}
+            className={`modal-org-overlay ${isSignOutModalClosing ? 'closing' : ''}`}
+            onClick={handleCloseSignOutModal}
           >
             <div
-              className="modal-org-content max-w-md p-6 sm:p-7 space-y-5"
+              className={`modal-org-content max-w-md p-6 sm:p-7 space-y-5 ${isSignOutModalClosing ? 'closing' : ''}`}
               onClick={(e) => e.stopPropagation()}
               role="dialog"
               aria-modal="true"
@@ -1931,8 +2053,8 @@ export const MemberPortal: React.FC = () => {
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
                 <button
                   type="button"
-                  className="btn-form-back py-2.5 px-5 text-sm font-semibold"
-                  onClick={() => setIsSignOutModalOpen(false)}
+                  className="btn-form-back py-2.5 px-5 text-sm font-semibold hover:-translate-y-0.5 active:scale-95 transition-all cursor-pointer"
+                  onClick={handleCloseSignOutModal}
                   disabled={isSigningOut}
                 >
                   Cancel
@@ -1960,6 +2082,43 @@ export const MemberPortal: React.FC = () => {
           </div>,
           document.body
         )}
+
+      {/* Account Deletion Confirmation Modal */}
+      <DeleteAccountModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onDeleted={() => navigate('/member/login', { replace: true })}
+      />
+
+      {/* Convert to UCDS Student Member Modal */}
+      {profile && (
+        <ConvertUcdsModal
+          isOpen={isConvertModalOpen}
+          onClose={() => setIsConvertModalOpen(false)}
+          profile={profile}
+          onConverted={() => {
+            setSuccess('Successfully converted to UCDS Student Member! Welcome to UCDS.');
+            if (user) {
+              loadUserPayments(profile, profile['email-preferred'] || user.email || '', true);
+            }
+          }}
+        />
+      )}
+
+      {/* Convert to External Member Modal */}
+      {profile && (
+        <ConvertToExternalModal
+          isOpen={isConvertToExternalModalOpen}
+          onClose={() => setIsConvertToExternalModalOpen(false)}
+          currentAffiliation={profile['affiliated-organization'] || ''}
+          onConverted={async () => {
+            setProfile((prev) => (prev ? { ...prev, isUCDS: false } : null));
+            const targetEmail = profile['email-preferred'] || user?.email || '';
+            await loadUserPayments({ ...profile, isUCDS: false }, targetEmail, true);
+            setSuccess('Successfully updated to External Member Account. Dues requirements updated.');
+          }}
+        />
+      )}
     </div>
   );
 };

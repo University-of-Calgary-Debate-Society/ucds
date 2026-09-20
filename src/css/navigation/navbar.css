@@ -276,3 +276,146 @@
 .dark .subcategory-link:hover .subcategory-title {
   color: #53afd0 !important;
 }
+
+/* =========================================================================
+   Motion-Reduced State: Preserve Strict Vertical Centering (No Jump/Shift)
+   ========================================================================= */
+.reduce-motion .floating-nav-container {
+  transform: translateY(-50%) scale(1) !important;
+  opacity: 1 !important;
+  transition: none !important;
+}
+
+.reduce-motion .floating-nav-container:hover,
+.reduce-motion .floating-nav-container.has-active-menu {
+  transform: translateY(-50%) scale(1) !important;
+}
+
+.reduce-motion .subcategories-drawer {
+  animation: none !important;
+  transform: none !important;
+}
+
+.reduce-motion .subcategory-animated-item {
+  animation: none !important;
+  transform: none !important;
+}
+
+/* =========================================================================
+   Mobile Touch & Bottom Navigation Bar (< 768px)
+   ========================================================================= */
+.floating-nav-mobile-backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* Provide padding so the bottom fixed bar doesn't obscure content */
+  body {
+    padding-bottom: max(4.75rem, calc(env(safe-area-inset-bottom, 0px) + 4.75rem));
+  }
+
+  .floating-nav-mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 52;
+    background: rgba(16, 20, 38, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: navBackdropFadeIn 0.2s ease-out;
+  }
+
+  /* Docked Bottom Center Navigation Container */
+  .floating-nav-container {
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: max(0.65rem, env(safe-area-inset-bottom, 0.65rem));
+    transform: translateX(-50%) scale(1);
+    transform-origin: bottom center;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 0.65rem;
+    max-height: none;
+    max-width: calc(100vw - 1rem);
+    z-index: 55;
+    opacity: 1;
+    pointer-events: none;
+  }
+
+  .floating-nav-container:hover,
+  .floating-nav-container:focus-within,
+  .floating-nav-container.has-active-menu {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+
+  .reduce-motion .floating-nav-container,
+  .reduce-motion .floating-nav-container:hover,
+  .reduce-motion .floating-nav-container.has-active-menu {
+    transform: translateX(-50%) scale(1) !important;
+  }
+
+  /* Horizontal Pill across the bottom */
+  .floating-nav-pillar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.75rem;
+    gap: clamp(0.35rem, 2vw, 0.65rem);
+    max-height: none;
+    border-radius: 9999px;
+    box-shadow: 0 12px 35px -8px rgba(0, 0, 0, 0.4), 0 0 20px 2px rgba(0, 117, 162, 0.15);
+  }
+
+  .nav-item-btn {
+    width: clamp(38px, 11vw, 44px);
+    height: clamp(38px, 11vw, 44px);
+  }
+
+  /* Subcategories Drawer pops upwards above bottom bar */
+  .subcategories-drawer {
+    width: min(340px, calc(100vw - 2rem));
+    max-width: 360px;
+    max-height: 58vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1rem;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 117, 162, 0.2);
+    animation: mobileDrawerSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .subcategory-link {
+    padding: 0.55rem 0.75rem;
+    min-height: 44px; /* Touch target accessibility */
+  }
+}
+
+@keyframes mobileDrawerSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (hover: none) {
+  /* Disable sticky hover tooltips on touch devices */
+  .nav-tooltip {
+    display: none !important;
+  }
+}
+
+@keyframes navBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+

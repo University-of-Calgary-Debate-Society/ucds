@@ -8,3 +8,4 @@ export * from './ThemeToggle';
 export * from './MiniScrollVisualizer';
 export * from './PageTransitionWrapper';
 export * from './NeuralNetworkBackground';
+export * from './DeleteAccountModal';

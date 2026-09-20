@@ -12,8 +12,6 @@ import {
   Clock,
   UserCheck,
   UserX,
-  ToggleLeft,
-  ToggleRight,
   AlertCircle,
   RefreshCw,
   Building2,
@@ -38,9 +36,44 @@ import {
   type PreviousExecutiveYearDoc,
   type PreviousExecutiveOfficer,
   type CurrentExecutiveOfficer,
+  type UserProfile,
 } from '@/services/userService';
 
 type MemberTab = 'external' | 'members' | 'executives';
+
+interface ToggleSwitchProps {
+  checked: boolean;
+  onChange: () => void;
+  activeColorClass?: string;
+  ariaLabel?: string;
+  disabled?: boolean;
+}
+
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
+  checked,
+  onChange,
+  activeColorClass = 'bg-[#0075A2]',
+  ariaLabel,
+  disabled = false,
+}) => (
+  <button
+    type="button"
+    role="switch"
+    aria-checked={checked}
+    aria-label={ariaLabel}
+    disabled={disabled}
+    onClick={onChange}
+    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
+      checked ? activeColorClass : 'bg-slate-300 dark:bg-slate-700'
+    }`}
+  >
+    <span
+      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+        checked ? 'translate-x-5' : 'translate-x-0'
+      }`}
+    />
+  </button>
+);
 
 export const ExecutiveMembers: React.FC = () => {
   const [activeTab, setActiveTab] = useState<MemberTab>('members');
@@ -89,12 +122,28 @@ export const ExecutiveMembers: React.FC = () => {
   const [deleteTargetYearId, setDeleteTargetYearId] = useState<string | null>(null);
   const [deleteTargetOfficerKey, setDeleteTargetOfficerKey] = useState<string | null>(null);
 
+  // Edit Member Modal State
+  const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<UserDirectoryEntry | null>(null);
+  const [editUcid, setEditUcid] = useState('');
+  const [editUcalgaryEmail, setEditUcalgaryEmail] = useState('');
+  const [editPreferredEmail, setEditPreferredEmail] = useState('');
+  const [editAffiliation, setEditAffiliation] = useState('');
+  const [editProgram, setEditProgram] = useState('');
+  const [editYear, setEditYear] = useState('');
+  const [editIsUCDS, setEditIsUCDS] = useState(false);
+  const [editIsPaid, setEditIsPaid] = useState(false);
+  const [editIsExecutive, setEditIsExecutive] = useState(false);
+  const [editIsRestricted, setEditIsRestricted] = useState(false);
+  const [isSavingMember, setIsSavingMember] = useState(false);
+
   // Scroll lock when any modal is open
   useEffect(() => {
     const isAnyOpen =
       isCurrentExecModalOpen ||
       isYearModalOpen ||
       isPrevOfficerModalOpen ||
+      isEditMemberModalOpen ||
       Boolean(deleteConfirmType);
 
     if (isAnyOpen) {
@@ -104,7 +153,13 @@ export const ExecutiveMembers: React.FC = () => {
         document.body.style.overflow = original;
       };
     }
-  }, [isCurrentExecModalOpen, isYearModalOpen, isPrevOfficerModalOpen, deleteConfirmType]);
+  }, [
+    isCurrentExecModalOpen,
+    isYearModalOpen,
+    isPrevOfficerModalOpen,
+    isEditMemberModalOpen,
+    deleteConfirmType,
+  ]);
 
   // Load All Data
   const loadData = useCallback(async (forceRefresh = false) => {
@@ -137,7 +192,7 @@ export const ExecutiveMembers: React.FC = () => {
   // Toggle Member Field
   const handleTogglePrivilege = async (
     userItem: UserDirectoryEntry,
-    field: 'isPaid' | 'isExecutive' | 'isRestricted'
+    field: 'isPaid' | 'isExecutive' | 'isRestricted' | 'isUCDS'
   ) => {
     const nextVal = !userItem[field];
     try {
@@ -145,10 +200,68 @@ export const ExecutiveMembers: React.FC = () => {
       setUsers((prev) =>
         prev.map((u) => (u.id === userItem.id ? { ...u, [field]: nextVal } : u))
       );
-      setSuccess(`Updated ${field} to ${nextVal} for ${userItem['name-first'] || userItem.username || 'user'}.`);
+      if (field === 'isUCDS') {
+        setSuccess(
+          nextVal
+            ? `Moved ${userItem['name-first'] || userItem.username || 'user'} to Internal UCDS Members roster.`
+            : `Moved ${userItem['name-first'] || userItem.username || 'user'} to External Members roster.`
+        );
+      } else {
+        setSuccess(`Updated ${field} to ${nextVal} for ${userItem['name-first'] || userItem.username || 'user'}.`);
+      }
     } catch (err) {
       console.error(`Failed to toggle ${field}:`, err);
       setError(`Failed to update ${field}.`);
+    }
+  };
+
+  // Open Edit Member Modal
+  const handleOpenEditMemberModal = (m: UserDirectoryEntry) => {
+    setEditingMember(m);
+    setEditUcid(m.ucid || '');
+    setEditUcalgaryEmail(m['email-ucalgary'] || '');
+    setEditPreferredEmail(m['email-preferred'] || m['email-login'] || '');
+    setEditAffiliation(m['affiliated-organization'] || '');
+    setEditProgram(m.program || '');
+    setEditYear(m.year || '');
+    setEditIsUCDS(Boolean(m.isUCDS));
+    setEditIsPaid(Boolean(m.isPaid));
+    setEditIsExecutive(Boolean(m.isExecutive));
+    setEditIsRestricted(Boolean(m.isRestricted));
+    setIsEditMemberModalOpen(true);
+  };
+
+  // Save Member Details
+  const handleSaveMemberDetails = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMember) return;
+
+    setIsSavingMember(true);
+    try {
+      const updatePayload: Partial<UserProfile> = {
+        ucid: editUcid.trim(),
+        'email-ucalgary': editUcalgaryEmail.trim().toLowerCase(),
+        'email-preferred': editPreferredEmail.trim().toLowerCase(),
+        'affiliated-organization': editAffiliation.trim(),
+        program: editProgram.trim(),
+        year: editYear.trim(),
+        isUCDS: editIsUCDS,
+        isPaid: editIsPaid,
+        isExecutive: editIsExecutive,
+        isRestricted: editIsRestricted,
+      };
+
+      await updateUserPrivileges(editingMember.id, updatePayload);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === editingMember.id ? { ...u, ...updatePayload } : u))
+      );
+      setSuccess(`Updated member profile for ${editingMember['name-first'] || editingMember.username || 'user'}.`);
+      setIsEditMemberModalOpen(false);
+    } catch (err) {
+      console.error('Failed to update member details:', err);
+      setError('Failed to update member details.');
+    } finally {
+      setIsSavingMember(false);
     }
   };
 
@@ -572,35 +685,53 @@ export const ExecutiveMembers: React.FC = () => {
                       className="exec-card flex flex-col justify-between p-3.5 hover:border-[#0075A2] dark:hover:border-[#53afd0] transition-all rounded-xl"
                     >
                       <div className="space-y-2">
-                        {/* Header: Name + Registered Badge */}
+                        {/* Header: Name + Registered Badge + Edit Button */}
                         <div className="flex items-start justify-between gap-1.5">
-                          <div>
-                            <h3 className="font-extrabold text-xs text-[#1C244C] dark:text-[#F6F6F6] leading-snug">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-extrabold text-xs text-[#1C244C] dark:text-[#F6F6F6] leading-snug truncate">
                               {fullName}
                             </h3>
-                            <div className="text-[10.5px] text-slate-500 dark:text-slate-400 font-mono">
+                            <div className="text-[10.5px] text-slate-500 dark:text-slate-400 font-mono truncate">
                               @{m.username || 'user'} {pronounDisplay ? `• (${pronounDisplay})` : ''}
                             </div>
                           </div>
 
-                          <span
-                            className={`inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${m.isRegistered
-                              ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
-                              : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
-                              }`}
-                            title={m.isRegistered ? 'Verified Registered User' : 'Unregistered User'}
-                          >
-                            {m.isRegistered ? <UserCheck className="w-2.5 h-2.5" /> : <UserX className="w-2.5 h-2.5" />}
-                            <span>{m.isRegistered ? 'Registered' : 'Guest'}</span>
-                          </span>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditMemberModal(m)}
+                              className="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-[#0075A2] dark:hover:text-[#53afd0] transition cursor-pointer"
+                              title="Edit Member Details (UCID, UCalgary Email, etc.)"
+                              aria-label="Edit Member Details"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                            </button>
+
+                            <span
+                              className={`inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${m.isRegistered
+                                ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
+                                : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                                }`}
+                              title={m.isRegistered ? 'Verified Registered User' : 'Unregistered User'}
+                            >
+                              {m.isRegistered ? <UserCheck className="w-2.5 h-2.5" /> : <UserX className="w-2.5 h-2.5" />}
+                              <span>{m.isRegistered ? 'Registered' : 'Guest'}</span>
+                            </span>
+                          </div>
                         </div>
 
-                        {/* Email & Year */}
+                        {/* Email, UCID, & Year */}
                         <div className="space-y-0.5 text-[11px] text-slate-600 dark:text-slate-300">
                           <div className="flex items-center gap-1.5 truncate" title={email}>
                             <Mail className="w-3 h-3 text-slate-400 flex-shrink-0" />
                             <span className="truncate">{email}</span>
                           </div>
+                          {m.ucid && (
+                            <div className="flex items-center gap-1.5 text-[10px] text-[#0075A2] dark:text-[#53afd0] font-mono">
+                              <span className="font-bold">UCID:</span>
+                              <span>{m.ucid}</span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Roles */}
@@ -618,47 +749,50 @@ export const ExecutiveMembers: React.FC = () => {
                         )}
                       </div>
 
-                      {/* Privilege Toggles: isPaid, isExecutive, isRestricted */}
-                      <div className="mt-3 pt-2.5 border-t border-[#1C244C]/10 dark:border-[#53afd0]/15 space-y-1.5 text-[11px]">
+                      {/* Privilege Toggles: Settings Modal Style Switches */}
+                      <div className="mt-3 pt-2.5 border-t border-[#1C244C]/10 dark:border-[#53afd0]/15 space-y-2 text-[11px]">
+                        {/* Move Between Internal / External Switch */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-600 dark:text-slate-300 font-medium">UCDS Member</span>
+                          <ToggleSwitch
+                            checked={Boolean(m.isUCDS)}
+                            onChange={() => handleTogglePrivilege(m, 'isUCDS')}
+                            activeColorClass="bg-[#0075A2] dark:bg-[#53afd0]"
+                            ariaLabel="Toggle UCDS membership status"
+                          />
+                        </div>
+
                         {/* Paid Dues Switch */}
                         <div className="flex items-center justify-between">
-                          <span className="text-slate-600 dark:text-slate-300 font-medium flex items-center gap-1">
-                            <span>Dues Paid</span>
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleTogglePrivilege(m, 'isPaid')}
-                            className={`p-1 rounded-md transition cursor-pointer flex items-center gap-1 font-bold text-[10px] ${m.isPaid ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'
-                              }`}
-                          >
-                            {m.isPaid ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
-                          </button>
+                          <span className="text-slate-600 dark:text-slate-300 font-medium">Dues Paid</span>
+                          <ToggleSwitch
+                            checked={Boolean(m.isPaid)}
+                            onChange={() => handleTogglePrivilege(m, 'isPaid')}
+                            activeColorClass="bg-emerald-600"
+                            ariaLabel="Toggle dues paid"
+                          />
                         </div>
 
                         {/* Executive Status Switch */}
                         <div className="flex items-center justify-between">
                           <span className="text-slate-600 dark:text-slate-300 font-medium">Executive</span>
-                          <button
-                            type="button"
-                            onClick={() => handleTogglePrivilege(m, 'isExecutive')}
-                            className={`p-1 rounded-md transition cursor-pointer flex items-center gap-1 font-bold text-[10px] ${m.isExecutive ? 'text-[#0075A2] dark:text-[#53afd0]' : 'text-slate-400'
-                              }`}
-                          >
-                            {m.isExecutive ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
-                          </button>
+                          <ToggleSwitch
+                            checked={Boolean(m.isExecutive)}
+                            onChange={() => handleTogglePrivilege(m, 'isExecutive')}
+                            activeColorClass="bg-[#0075A2] dark:bg-[#53afd0]"
+                            ariaLabel="Toggle executive status"
+                          />
                         </div>
 
                         {/* Restricted Status Switch */}
                         <div className="flex items-center justify-between">
                           <span className="text-slate-600 dark:text-slate-300 font-medium">Restricted</span>
-                          <button
-                            type="button"
-                            onClick={() => handleTogglePrivilege(m, 'isRestricted')}
-                            className={`p-1 rounded-md transition cursor-pointer flex items-center gap-1 font-bold text-[10px] ${m.isRestricted ? 'text-rose-600' : 'text-slate-400'
-                              }`}
-                          >
-                            {m.isRestricted ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
-                          </button>
+                          <ToggleSwitch
+                            checked={Boolean(m.isRestricted)}
+                            onChange={() => handleTogglePrivilege(m, 'isRestricted')}
+                            activeColorClass="bg-rose-600"
+                            ariaLabel="Toggle restricted status"
+                          />
                         </div>
                       </div>
                     </div>
@@ -733,58 +867,92 @@ export const ExecutiveMembers: React.FC = () => {
                   const email = m['email-login'] || m['email-preferred'] || 'No email attached';
                   const affiliation = m['affiliated-organization']?.trim() || 'Independent';
 
+                  const pronounDisplay = m.pronouns?.subject && m.pronouns?.object ? `${m.pronouns.subject}/${m.pronouns.object}` : '';
+
                   return (
                     <div
                       key={m.id}
                       className="exec-card flex flex-col justify-between p-3.5 hover:border-[#0075A2] dark:hover:border-[#53afd0] transition-all rounded-xl"
                     >
                       <div className="space-y-2">
-                        {/* Header: Name + Registered Badge */}
+                        {/* Header: Name + Registered Badge + Edit Button */}
                         <div className="flex items-start justify-between gap-1.5">
-                          <div>
-                            <h3 className="font-extrabold text-xs text-[#1C244C] dark:text-[#F6F6F6] leading-snug">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-extrabold text-xs text-[#1C244C] dark:text-[#F6F6F6] leading-snug truncate">
                               {fullName}
                             </h3>
-                            <div className="text-[10.5px] text-[#0075A2] dark:text-[#53afd0] font-medium truncate" title={affiliation}>
-                              {affiliation}
+                            <div className="text-[10.5px] text-slate-500 dark:text-slate-400 font-mono truncate">
+                              @{m.username || 'user'} {pronounDisplay ? `• (${pronounDisplay})` : ''}
                             </div>
                           </div>
 
-                          <span
-                            className={`inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${m.isRegistered
-                              ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
-                              : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
-                              }`}
-                            title={m.isRegistered ? 'Registered on website' : 'Not registered on website'}
-                          >
-                            {m.isRegistered ? <UserCheck className="w-2.5 h-2.5" /> : <UserX className="w-2.5 h-2.5" />}
-                            <span>{m.isRegistered ? 'Registered' : 'Guest'}</span>
-                          </span>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditMemberModal(m)}
+                              className="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-[#0075A2] dark:hover:text-[#53afd0] transition cursor-pointer"
+                              title="Edit Member Details (UCID, UCalgary Email, etc.)"
+                              aria-label="Edit Member Details"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                            </button>
+
+                            <span
+                              className={`inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${m.isRegistered
+                                ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
+                                : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                                }`}
+                              title={m.isRegistered ? 'Verified Registered User' : 'Unregistered User'}
+                            >
+                              {m.isRegistered ? <UserCheck className="w-2.5 h-2.5" /> : <UserX className="w-2.5 h-2.5" />}
+                              <span>{m.isRegistered ? 'Registered' : 'Guest'}</span>
+                            </span>
+                          </div>
                         </div>
 
-                        {/* Email */}
+                        {/* Email & Affiliation */}
                         <div className="space-y-0.5 text-[11px] text-slate-600 dark:text-slate-300">
                           <div className="flex items-center gap-1.5 truncate" title={email}>
                             <Mail className="w-3 h-3 text-slate-400 flex-shrink-0" />
                             <span className="truncate">{email}</span>
                           </div>
+                          {affiliation && (
+                            <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                              <Building2 className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                              <span className="truncate">{affiliation}</span>
+                            </div>
+                          )}
+                          {m.ucid && (
+                            <div className="flex items-center gap-1.5 text-[10px] text-[#0075A2] dark:text-[#53afd0] font-mono">
+                              <span className="font-bold">UCID:</span>
+                              <span>{m.ucid}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      {/* Privilege Toggles: isRestricted */}
-                      <div className="mt-3 pt-2.5 border-t border-[#1C244C]/10 dark:border-[#53afd0]/15 space-y-1.5 text-[11px]">
+                      {/* Privilege Toggles: Settings Modal Style */}
+                      <div className="mt-3 pt-2.5 border-t border-[#1C244C]/10 dark:border-[#53afd0]/15 space-y-2 text-[11px]">
+                        {/* Move to Internal Member Switch */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-600 dark:text-slate-300 font-medium">UCDS Member</span>
+                          <ToggleSwitch
+                            checked={Boolean(m.isUCDS)}
+                            onChange={() => handleTogglePrivilege(m, 'isUCDS')}
+                            activeColorClass="bg-[#0075A2] dark:bg-[#53afd0]"
+                            ariaLabel="Move to internal UCDS member"
+                          />
+                        </div>
 
                         {/* Restricted Status Switch */}
                         <div className="flex items-center justify-between">
                           <span className="text-slate-600 dark:text-slate-300 font-medium">Restricted</span>
-                          <button
-                            type="button"
-                            onClick={() => handleTogglePrivilege(m, 'isRestricted')}
-                            className={`p-1 rounded-md transition cursor-pointer flex items-center gap-1 font-bold text-[10px] ${m.isRestricted ? 'text-rose-600' : 'text-slate-400'
-                              }`}
-                          >
-                            {m.isRestricted ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
-                          </button>
+                          <ToggleSwitch
+                            checked={Boolean(m.isRestricted)}
+                            onChange={() => handleTogglePrivilege(m, 'isRestricted')}
+                            activeColorClass="bg-rose-600"
+                            ariaLabel="Toggle restricted status"
+                          />
                         </div>
                       </div>
                     </div>
@@ -1344,6 +1512,203 @@ export const ExecutiveMembers: React.FC = () => {
                     Delete Permanently
                   </button>
                 </div>
+              </div>
+            </div>,
+            document.body
+          )}
+
+        {/* ========================================================================= */}
+        {/* EDIT MEMBER DETAILS MODAL (UCID, UCALGARY EMAIL, MEMBERSHIP, ETC.)        */}
+        {/* ========================================================================= */}
+        {isEditMemberModalOpen && editingMember &&
+          typeof document !== 'undefined' &&
+          createPortal(
+            <div
+              className="modal-org-overlay"
+              onClick={() => !isSavingMember && setIsEditMemberModalOpen(false)}
+              role="dialog"
+              aria-modal="true"
+            >
+              <div
+                className="modal-org-content max-w-lg p-6 sm:p-7 space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-start justify-between border-b border-[#1C244C]/10 dark:border-[#53afd0]/20 pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-[#0075A2]/10 dark:bg-[#53afd0]/20 text-[#0075A2] dark:text-[#53afd0] flex items-center justify-center font-bold">
+                      <Edit2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="modal-header-title text-lg">
+                        Edit Member Details
+                      </h3>
+                      <p className="modal-header-subtitle">
+                        @{editingMember.username || 'user'} • {editingMember['name-first']} {editingMember['name-last']}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditMemberModalOpen(false)}
+                    disabled={isSavingMember}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSaveMemberDetails} className="space-y-3.5 text-xs">
+                  {/* Membership Type Switch */}
+                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-[#1C244C] dark:text-[#F6F6F6] block">
+                        Internal UCDS Member
+                      </span>
+                      <span className="text-[10.5px] text-slate-500 dark:text-slate-400">
+                        {editIsUCDS
+                          ? 'Listed under UCalgary student member roster with dues & voting eligibility.'
+                          : 'Listed as External member (visiting debater/adjudicator).'}
+                      </span>
+                    </div>
+                    <ToggleSwitch
+                      checked={editIsUCDS}
+                      onChange={() => setEditIsUCDS((prev) => !prev)}
+                      activeColorClass="bg-[#0075A2] dark:bg-[#53afd0]"
+                    />
+                  </div>
+
+                  {/* Student UCID & UCalgary Email (Manually editable by exec) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        UCID (8-Digit Student ID)
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={8}
+                        placeholder="e.g. 30123456"
+                        value={editUcid}
+                        onChange={(e) => setEditUcid(e.target.value)}
+                        className="exec-input text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        UCalgary Student Email
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="user@ucalgary.ca"
+                        value={editUcalgaryEmail}
+                        onChange={(e) => setEditUcalgaryEmail(e.target.value)}
+                        className="exec-input text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Preferred Contact Email
+                      </label>
+                      <input
+                        type="email"
+                        value={editPreferredEmail}
+                        onChange={(e) => setEditPreferredEmail(e.target.value)}
+                        className="exec-input text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Affiliated Organization / Club
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. University of Calgary Debate Society"
+                        value={editAffiliation}
+                        onChange={(e) => setEditAffiliation(e.target.value)}
+                        className="exec-input text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Program / Major
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Computer Science, Law"
+                        value={editProgram}
+                        onChange={(e) => setEditProgram(e.target.value)}
+                        className="exec-input text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Year of Study
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 1, 2, 3, 4, Alumni"
+                        value={editYear}
+                        onChange={(e) => setEditYear(e.target.value)}
+                        className="exec-input text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Privilege Toggles in Modal */}
+                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                    <span className="font-bold text-[#1C244C] dark:text-[#F6F6F6] text-xs block mb-1">
+                      Member Privileges
+                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600 dark:text-slate-300 font-medium">Society Dues Paid</span>
+                      <ToggleSwitch
+                        checked={editIsPaid}
+                        onChange={() => setEditIsPaid((prev) => !prev)}
+                        activeColorClass="bg-emerald-600"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600 dark:text-slate-300 font-medium">Executive Portal Access</span>
+                      <ToggleSwitch
+                        checked={editIsExecutive}
+                        onChange={() => setEditIsExecutive((prev) => !prev)}
+                        activeColorClass="bg-[#0075A2] dark:bg-[#53afd0]"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600 dark:text-slate-300 font-medium">Restricted Account</span>
+                      <ToggleSwitch
+                        checked={editIsRestricted}
+                        onChange={() => setEditIsRestricted((prev) => !prev)}
+                        activeColorClass="bg-rose-600"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditMemberModalOpen(false)}
+                      disabled={isSavingMember}
+                      className="btn-exec-return text-xs py-2 px-4"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSavingMember}
+                      className="btn-exec-primary text-xs py-2 px-5"
+                    >
+                      {isSavingMember ? 'Saving...' : 'Save Member Details'}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>,
             document.body

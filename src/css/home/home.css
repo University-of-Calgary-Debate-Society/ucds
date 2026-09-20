@@ -746,3 +746,60 @@
   bottom: -40px;
   right: -42px;
 }
+
+/* =========================================================================
+   Mobile Viewport & Screen Responsiveness (< 640px)
+   ========================================================================= */
+@media (max-width: 640px) {
+  .home-hero-container {
+    padding: 5.5rem 1rem 3rem;
+  }
+
+  .hero-title-part2 {
+    font-size: clamp(2.1rem, 9.2vw, 3.2rem);
+  }
+
+  /* Compact responsive mascot & heritage badges */
+  .badge-rex {
+    width: 80px;
+    height: 80px;
+    bottom: -28px;
+    left: -12px;
+  }
+
+  .badge-canada {
+    width: 78px;
+    height: 78px;
+    top: -24px;
+    right: -12px;
+  }
+
+  .badge-ucalgary {
+    width: 72px;
+    height: 72px;
+    top: -24px;
+    left: -10px;
+  }
+
+  .badge-gavel {
+    width: 74px;
+    height: 74px;
+    bottom: -24px;
+    right: -10px;
+  }
+
+  /* Button stacking for small touch screens */
+  .hero-buttons-group {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.85rem;
+    margin-top: 1.75rem;
+  }
+
+  .btn-join-primary,
+  .btn-hero-secondary {
+    width: 100%;
+    max-width: 320px;
+    justify-content: center;
+  }
+}

@@ -317,13 +317,18 @@ export async function syncUserMembershipFeeStatus(
   }
 }
 
+export function invalidatePaymentsCache(): void {
+  clientCache.invalidate(PAYMENTS_CACHE_KEY);
+}
+
 /**
  * Fetches all payment bills from Firestore and returns only those that list the user by email or institution,
  * evaluating `time-open` and `time-deadline` for display and payment completion permissions.
  */
 export async function getUserPayableItems(
   profile: UserProfile,
-  userEmail: string
+  userEmail: string,
+  forceRefresh = false
 ): Promise<UserPayableItem[]> {
   const userEmails = [
     profile['email-login'],
@@ -342,7 +347,9 @@ export async function getUserPayableItems(
   const isExecutive = Boolean(profile?.isExecutive);
   const isUCDS = Boolean(profile?.isUCDS);
 
-  let allBills: PaymentBill[] = clientCache.get<PaymentBill[]>(PAYMENTS_CACHE_KEY) || [];
+  let allBills: PaymentBill[] = forceRefresh
+    ? []
+    : clientCache.get<PaymentBill[]>(PAYMENTS_CACHE_KEY) || [];
 
   if (allBills.length === 0 && db && isFirebaseConfigured()) {
     try {
@@ -407,13 +414,13 @@ export async function getUserPayableItems(
     const isInstCompleted = userAffiliation && completedInst.includes(userAffiliation);
     const isInstIncomplete = userAffiliation && incompleteInst.includes(userAffiliation);
 
-    // If it's the society membership dues, UCDS members or listed members get it displayed
+    // If it's the society membership dues, display for all members (UCDS or External status)
     const isListed =
       isEmailCompleted ||
       isEmailIncomplete ||
       Boolean(isInstCompleted) ||
       Boolean(isInstIncomplete) ||
-      (isMembership && isUCDS);
+      isMembership;
 
     if (!isListed) {
       // If not listed for this event/bill, skip from user dashboard
@@ -443,7 +450,7 @@ export async function getUserPayableItems(
       } else if (isExecutive) {
         statusType = 'exempt';
         statusText = 'Executive (Dues Exempt)';
-      } else if (!profile.isUCDS) {
+      } else if (!isUCDS) {
         statusType = 'exempt';
         statusText = 'External Account (No Dues)';
       } else if (isPaid) {

@@ -115,11 +115,20 @@ export const FloatingNavbar: React.FC = () => {
   const selectedCategoryObj = NAV_CATEGORIES.find((cat) => cat.id === activeCategory);
 
   return (
-    <nav
-      ref={containerRef}
-      className={`floating-nav-container ${activeCategory ? 'has-active-menu' : ''}`}
-      aria-label="Main floating navigation"
-    >
+    <>
+      {/* Mobile backdrop for one-tap dismissal on touch screens */}
+      {activeCategory && (
+        <div
+          className="floating-nav-mobile-backdrop"
+          onClick={() => setActiveCategory(null)}
+          aria-hidden="true"
+        />
+      )}
+      <nav
+        ref={containerRef}
+        className={`floating-nav-container ${activeCategory ? 'has-active-menu' : ''}`}
+        aria-label="Main floating navigation"
+      >
       {/* Pillar with 6 main icons */}
       <div className="floating-nav-pillar">
         {NAV_CATEGORIES.map((category) => {
@@ -208,6 +217,7 @@ export const FloatingNavbar: React.FC = () => {
         </div>
       )}
     </nav>
+    </>
   );
 };
 

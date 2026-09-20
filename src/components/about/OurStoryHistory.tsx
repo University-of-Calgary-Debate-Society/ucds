@@ -69,7 +69,7 @@ interface DriveImageProps {
 const DriveImage: React.FC<DriveImageProps> = ({ fileId, alt, className = '', wrapperClassName = '' }) => {
   const [loaded, setLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const [currentSrc, setCurrentSrc] = useState<string>('');
+  const [currentSrc, setCurrentSrc] = useState<string>(() => getDriveEndpoints(fileId)[0]);
   const [retryCount, setRetryCount] = useState<number>(0);
   const [secondsUntilRetry, setSecondsUntilRetry] = useState<number>(0);
   const [isRetrying, setIsRetrying] = useState<boolean>(false);
@@ -150,7 +150,7 @@ const DriveImage: React.FC<DriveImageProps> = ({ fileId, alt, className = '', wr
     if (url.startsWith('blob:')) return; // Already loaded from blob cache
 
     try {
-      const res = await fetch(url, { mode: 'cors' });
+      const res = await fetch(url, { mode: 'cors', referrerPolicy: 'no-referrer' });
       if (res.ok) {
         const blob = await res.blob();
         if (blob && blob.size > 200) {
@@ -277,6 +277,7 @@ const DriveImage: React.FC<DriveImageProps> = ({ fileId, alt, className = '', wr
             src={currentSrc}
             alt={alt}
             loading="lazy"
+            referrerPolicy="no-referrer"
             onLoad={handleLoadSuccess}
             onError={handleError}
             className={`${className} transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}

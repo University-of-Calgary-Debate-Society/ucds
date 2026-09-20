@@ -206,7 +206,6 @@ body::-webkit-scrollbar,
   animation-iteration-count: 1 !important;
   transition-duration: 0.001ms !important;
   scroll-behavior: auto !important;
-  transform: none !important;
 }
 
 /* =========================================================================
@@ -471,7 +470,30 @@ header,
   }
 }
 
+/* =========================================================================
+   Mobile Browser Compatibility Standards & Viewport Optimization
+   ========================================================================= */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
 
+/* Prevent iOS Safari input auto-zooming by enforcing minimum 16px font-size on mobile */
+@media (max-width: 640px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
 
-
-
+/* Mobile Safe Areas for Notch and Dynamic Island */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}

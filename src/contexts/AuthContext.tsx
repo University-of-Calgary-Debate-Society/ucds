@@ -6,9 +6,11 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
+  sendEmailVerification,
+  deleteUser,
 } from 'firebase/auth';
 import { auth, googleProvider, isFirebaseConfigured } from '@/lib/firebase';
-import { subscribeUserProfile, getUserProfile, type UserProfile } from '@/services/userService';
+import { subscribeUserProfile, getUserProfile, deleteUserAccount, type UserProfile } from '@/services/userService';
 
 interface AuthContextType {
   user: User | null;
@@ -22,6 +24,9 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string) => Promise<void>;
+  sendVerification: () => Promise<void>;
+  reloadUser: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   authError: string | null;
@@ -138,12 +143,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     try {
-      await createUserWithEmailAndPassword(auth, email, pass);
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      if (cred.user) {
+        try {
+          await sendEmailVerification(cred.user);
+        } catch (verifErr) {
+          console.warn('Notice: Email verification dispatch warning:', verifErr);
+        }
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to create account';
       setAuthError(message);
       throw err;
     }
+  };
+
+  const sendVerification = async () => {
+    if (!auth?.currentUser) {
+      throw new Error('No user is currently signed in.');
+    }
+    await sendEmailVerification(auth.currentUser);
+  };
+
+  const reloadUser = async () => {
+    if (!auth?.currentUser) return;
+    await auth.currentUser.reload();
+    setUser({ ...auth.currentUser });
+  };
+
+  const deleteAccount = async () => {
+    if (!auth?.currentUser) {
+      throw new Error('No user is currently signed in.');
+    }
+    const currentUser = auth.currentUser;
+    const uid = currentUser.uid;
+    const preferredEmail =
+      profile?.['email-preferred'] || profile?.['email-login'] || currentUser.email || undefined;
+    const username = profile?.username;
+
+    // Delete Firestore records (Users doc, Usernames index, Subscribers doc)
+    await deleteUserAccount(uid, preferredEmail, username);
+
+    // Delete Firebase Auth user
+    await deleteUser(currentUser);
+
+    setUser(null);
+    setProfile(null);
   };
 
   const logout = async () => {
@@ -184,6 +229,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signInWithGoogle,
         signInWithEmail,
         signUpWithEmail,
+        sendVerification,
+        reloadUser,
+        deleteAccount,
         logout,
         refreshProfile,
         authError,

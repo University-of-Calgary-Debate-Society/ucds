@@ -12,6 +12,9 @@ import {
   HelpCircle,
   Building,
   Check,
+  RefreshCw,
+  Send,
+  LogOut,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { MultiStepForm, type FormStepDefinition } from './MultiStepForm';
@@ -32,7 +35,28 @@ type UCalgaryStatus = 'current' | 'alumnus';
 
 export const MemberRegister: React.FC = () => {
   const navigate = useNavigate();
-  const { user, signInWithGoogle, signUpWithEmail } = useAuth();
+  const {
+    user,
+    signInWithGoogle,
+    signUpWithEmail,
+    sendVerification,
+    reloadUser,
+    logout,
+  } = useAuth();
+
+  // Email verification gate state
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendNotice, setResendNotice] = useState<string | null>(null);
+  const [isCheckingVerification, setIsCheckingVerification] = useState(false);
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   // Auth creation state (Step 0 if not logged in)
   const [authMethod, setAuthMethod] = useState<'options' | 'email'>('options');
@@ -482,6 +506,19 @@ export const MemberRegister: React.FC = () => {
     setIsSubmitting(true);
     setError(null);
 
+    // Enforce email verification for non-Google email registrants
+    const isGoogle = Boolean(
+      user?.providerData?.some((p) => p.providerId === 'google.com')
+    );
+    if (!isGoogle) {
+      await reloadUser();
+      if (!auth?.currentUser?.emailVerified) {
+        setError('Please verify your email address before completing your membership registration.');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     try {
       // Resolve pronouns
       let pronounsObj = { object: '', subject: '' };
@@ -716,6 +753,142 @@ export const MemberRegister: React.FC = () => {
             >
               Sign in here
             </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if current user registered with email and requires verification
+  const isGoogleUser = Boolean(
+    user?.providerData?.some((p) => p.providerId === 'google.com')
+  );
+  const requiresEmailVerification = Boolean(user && !isGoogleUser && !user.emailVerified);
+
+  if (requiresEmailVerification) {
+    const handleCheckVerification = async () => {
+      setIsCheckingVerification(true);
+      setError(null);
+      setResendNotice(null);
+      try {
+        await reloadUser();
+        if (auth?.currentUser?.emailVerified) {
+          // Email is verified, state will refresh automatically
+        } else {
+          setError(
+            'Your email address is not verified yet. Please check your inbox (including spam/junk folder) and click the verification link.'
+          );
+        }
+      } catch (err) {
+        console.error('Check verification error:', err);
+        setError('Failed to check verification status. Please try again.');
+      } finally {
+        setIsCheckingVerification(false);
+      }
+    };
+
+    const handleResendEmail = async () => {
+      if (resendCooldown > 0) return;
+      setIsResendingVerification(true);
+      setError(null);
+      setResendNotice(null);
+      try {
+        await sendVerification();
+        setResendCooldown(60);
+        setResendNotice(`Verification email resent to ${user.email}. Please check your inbox.`);
+      } catch (err: unknown) {
+        console.error('Resend verification error:', err);
+        const msg = err instanceof Error ? err.message : 'Failed to resend verification email.';
+        if (msg.includes('too-many-requests')) {
+          setError('Too many requests. Please wait a minute before trying again.');
+        } else {
+          setError(msg);
+        }
+      } finally {
+        setIsResendingVerification(false);
+      }
+    };
+
+    return (
+      <div className="member-page-container">
+        <FloatingAlert
+          message={error}
+          type="error"
+          onDismiss={() => setError(null)}
+          duration={5000}
+        />
+        <FloatingAlert
+          message={resendNotice}
+          type="success"
+          onDismiss={() => setResendNotice(null)}
+          duration={5000}
+        />
+
+        <div className="member-card max-w-lg text-center space-y-5 animate-modalPopIn">
+          <div className="w-16 h-16 mx-auto rounded-3xl bg-[#0075A2]/10 dark:bg-[#53afd0]/20 text-[#0075A2] dark:text-[#53afd0] flex items-center justify-center shadow-lg shadow-[#0075A2]/10">
+            <Mail className="w-8 h-8 animate-pulse" />
+          </div>
+
+          <div>
+            <h1 className="member-card-title text-2xl font-black font-title text-[#101426] dark:text-[#F6F6F6]">
+              Verify Your Email Address
+            </h1>
+            <p className="text-xs font-semibold text-[#0075A2] dark:text-[#53afd0] uppercase tracking-wider mt-1">
+              Registration Verification Required
+            </p>
+          </div>
+
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed max-w-md mx-auto">
+            To complete your membership registration, please verify your email address. We sent a verification link to:
+          </p>
+
+          <div className="p-3.5 rounded-2xl bg-white dark:bg-[#15162C] border-2 border-[#0075A2]/20 dark:border-[#53afd0]/30 shadow-xs">
+            <span className="font-title font-black text-base text-[#101426] dark:text-white break-all">
+              {user.email}
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Click the link inside the confirmation email, then return here and click <strong>"I've Verified My Email"</strong> to proceed.
+          </p>
+
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={handleCheckVerification}
+              disabled={isCheckingVerification}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-title font-bold text-sm bg-gradient-to-r from-[#0075A2] to-[#1C244C] hover:from-[#53afd0] hover:to-[#0075A2] text-white shadow-lg shadow-[#0075A2]/30 hover:scale-[1.02] active:scale-[0.98] transition cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${isCheckingVerification ? 'animate-spin' : ''}`} />
+              <span>{isCheckingVerification ? 'Checking...' : "I've Verified My Email"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleResendEmail}
+              disabled={isResendingVerification || resendCooldown > 0}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-title font-bold text-sm bg-slate-200 dark:bg-slate-800 text-[#1C244C] dark:text-[#F6F6F6] hover:bg-slate-300 dark:hover:bg-slate-700 transition cursor-pointer disabled:opacity-50"
+            >
+              <Send className="w-4 h-4" />
+              <span>
+                {resendCooldown > 0
+                  ? `Resend in ${resendCooldown}s`
+                  : isResendingVerification
+                    ? 'Sending...'
+                    : 'Resend Link'}
+              </span>
+            </button>
+          </div>
+
+          <div className="pt-4 border-t border-[rgba(28,36,76,0.12)] dark:border-[rgba(83,175,208,0.18)] flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => logout()}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 transition cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Sign out / Register with another email</span>
+            </button>
           </div>
         </div>
       </div>

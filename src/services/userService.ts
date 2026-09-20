@@ -331,6 +331,85 @@ export async function updateUserProfile(
   }
 }
 
+export interface UcdsConversionFields {
+  ucid: string;
+  emailUcalgary: string;
+  program: string;
+  year: string;
+  username?: string;
+  type?: string[];
+}
+
+/**
+ * Converts an external member account into a full UCDS student member account.
+ * Updates Firestore with UCID, UCalgary email, degree program, year of study,
+ * and sets affiliated organization to UCDS and isUCDS to true.
+ */
+export async function convertExternalToUcds(
+  uid: string,
+  fields: UcdsConversionFields
+): Promise<void> {
+  if (!db) throw new Error('Firestore is not configured');
+
+  const updateData: Partial<UserProfile> = {
+    ucid: fields.ucid.trim(),
+    'email-ucalgary': fields.emailUcalgary.trim().toLowerCase(),
+    program: fields.program.trim(),
+    year: fields.year.trim(),
+    isUCDS: true,
+    'affiliated-organization': 'University of Calgary Debate Society',
+    'time-updated': serverTimestamp(),
+  };
+
+  if (fields.username && fields.username.trim()) {
+    updateData.username = fields.username.trim().toLowerCase();
+    const cleanUsername = fields.username.trim().toLowerCase();
+    const usernameDocRef = doc(db, 'Usernames', cleanUsername);
+    await setDoc(
+      usernameDocRef,
+      { uid, updatedAt: serverTimestamp() },
+      { merge: true }
+    ).catch(() => {});
+  }
+
+  if (fields.type && fields.type.length > 0) {
+    updateData.type = fields.type;
+  }
+
+  const userDocRef = doc(db, 'Users', uid);
+  await updateDoc(userDocRef, updateData);
+
+  // Invalidate client-side caches
+  clientCache.invalidate(`user_profile_${uid}`);
+  clientCache.invalidate('ucds_all_users_cache');
+}
+
+/**
+ * Convert a UCDS internal member account to an External member account.
+ */
+export async function convertToExternalMember(
+  uid: string,
+  affiliatedOrg?: string
+): Promise<void> {
+  if (!db) throw new Error('Firestore is not initialized');
+
+  const updateData: Partial<UserProfile> = {
+    isUCDS: false,
+    'time-updated': serverTimestamp(),
+  };
+
+  if (affiliatedOrg !== undefined) {
+    updateData['affiliated-organization'] = affiliatedOrg.trim();
+  }
+
+  const userDocRef = doc(db, 'Users', uid);
+  await updateDoc(userDocRef, updateData);
+
+  // Invalidate client-side caches
+  clientCache.invalidate(`user_profile_${uid}`);
+  clientCache.invalidate('ucds_all_users_cache');
+}
+
 /**
  * Delete a user's Firestore document, username reservation, and associated subscriber entry.
  */
@@ -353,6 +432,9 @@ export async function deleteUserAccount(
     const subscriberRef = doc(db, 'Subscribers', preferredEmail.trim().toLowerCase());
     await deleteDoc(subscriberRef).catch(() => {});
   }
+
+  clientCache.invalidate(`user_profile_${uid}`);
+  clientCache.invalidate('ucds_all_users_cache');
 }
 
 /**
