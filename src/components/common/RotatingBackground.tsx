@@ -23,23 +23,41 @@ const CONCAVE_PANORAMA = [
 export const RotatingBackground: React.FC = () => {
   const { animationsEnabled } = useAppSettings();
   const [activeFadeIndex, setActiveFadeIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth <= 768;
+    }
+    return false;
+  });
 
-  // Background non-blocking preloading of unique images for butter-smooth 60fps rendering
   useEffect(() => {
-    CAROUSEL_IMAGES.forEach((img) => {
-      const imageObj = new Image();
-      imageObj.src = img.src;
-    });
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize, { passive: true });
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Fade mode timer when animations are disabled
+  const shouldRender3d = animationsEnabled && !isMobile;
+
+  // Background non-blocking preloading of unique images for butter-smooth rendering
   useEffect(() => {
-    if (animationsEnabled) return;
+    if (!isMobile) {
+      CAROUSEL_IMAGES.forEach((img) => {
+        const imageObj = new Image();
+        imageObj.src = img.src;
+      });
+    }
+  }, [isMobile]);
+
+  // Fade mode timer when animations are disabled OR on mobile devices
+  useEffect(() => {
+    if (shouldRender3d) return;
     const interval = setInterval(() => {
       setActiveFadeIndex((prev) => (prev + 1) % CAROUSEL_IMAGES.length);
     }, 4500);
     return () => clearInterval(interval);
-  }, [animationsEnabled]);
+  }, [shouldRender3d]);
 
   const totalCards = CONCAVE_PANORAMA.length;
   // Radius calibrated with 1150px card width to guarantee 150px clearance gap and zero clipping
@@ -47,8 +65,8 @@ export const RotatingBackground: React.FC = () => {
 
   return (
     <>
-      {/* 3D Concave Panoramic Stage (Colossal Ultra-Wide IMAX Experience) */}
-      {animationsEnabled && (
+      {/* 3D Concave Panoramic Stage (Colossal Ultra-Wide IMAX Experience - Desktop Only) */}
+      {shouldRender3d && (
         <div className="carousel-stage" aria-hidden="true">
           <div className="carousel-cylinder">
             {CONCAVE_PANORAMA.map((img, index) => {
@@ -78,8 +96,8 @@ export const RotatingBackground: React.FC = () => {
         </div>
       )}
 
-      {/* Gentle Fading Gallery (Disabled Animations Mode) */}
-      {!animationsEnabled && (
+      {/* Gentle Fading Gallery (Disabled Animations Mode & Mobile Devices) */}
+      {!shouldRender3d && (
         <div className="static-fade-gallery" aria-hidden="true">
           {CAROUSEL_IMAGES.map((img, idx) => (
             <div

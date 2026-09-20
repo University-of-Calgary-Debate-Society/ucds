@@ -748,44 +748,59 @@
 }
 
 /* =========================================================================
-   Mobile Viewport & Screen Responsiveness (< 640px)
+   Mobile Viewport & Screen Responsiveness (<= 768px)
    ========================================================================= */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+  /* Completely hide colossal 3D stage on mobile to prevent GPU compositor OOM crash */
+  .carousel-stage {
+    display: none !important;
+  }
+
+  .static-fade-gallery {
+    display: block !important;
+  }
+
   .home-hero-container {
     padding: 5.5rem 1rem 3rem;
+    overflow-x: hidden;
+  }
+
+  .hero-content-wrapper {
+    max-width: 100%;
+    padding: 0 0.5rem;
   }
 
   .hero-title-part2 {
-    font-size: clamp(2.1rem, 9.2vw, 3.2rem);
+    font-size: clamp(2.1rem, 9.2vw, 3.4rem);
   }
 
   /* Compact responsive mascot & heritage badges */
   .badge-rex {
-    width: 80px;
-    height: 80px;
-    bottom: -28px;
-    left: -12px;
+    width: 72px;
+    height: 72px;
+    bottom: -22px;
+    left: -8px;
   }
 
   .badge-canada {
-    width: 78px;
-    height: 78px;
-    top: -24px;
-    right: -12px;
+    width: 70px;
+    height: 70px;
+    top: -20px;
+    right: -8px;
   }
 
   .badge-ucalgary {
-    width: 72px;
-    height: 72px;
-    top: -24px;
-    left: -10px;
+    width: 68px;
+    height: 68px;
+    top: -20px;
+    left: -8px;
   }
 
   .badge-gavel {
-    width: 74px;
-    height: 74px;
-    bottom: -24px;
-    right: -10px;
+    width: 68px;
+    height: 68px;
+    bottom: -20px;
+    right: -8px;
   }
 
   /* Button stacking for small touch screens */
@@ -797,6 +812,7 @@
   }
 
   .btn-join-primary,
+  .btn-about-secondary,
   .btn-hero-secondary {
     width: 100%;
     max-width: 320px;

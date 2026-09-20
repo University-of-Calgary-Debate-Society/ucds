@@ -5,6 +5,7 @@ import {
   initializeFirestore,
   persistentLocalCache,
   persistentMultipleTabManager,
+  memoryLocalCache,
   type Firestore,
 } from 'firebase/firestore';
 import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics';
@@ -57,32 +58,35 @@ try {
             tabManager: persistentMultipleTabManager(),
           }),
         });
-      } catch {
-        db = getFirestore(app);
+      } catch (cacheErr) {
+        console.warn('Persistent cache initialization notice, falling back to memory cache:', cacheErr);
+        try {
+          db = initializeFirestore(app, {
+            localCache: memoryLocalCache(),
+          });
+        } catch {
+          db = getFirestore(app);
+        }
       }
     } else {
       db = getFirestore(app);
     }
     googleProvider = new GoogleAuthProvider();
 
-    // App Check initialization (with local dev debug support)
-    if (typeof window !== 'undefined' && app) {
-      const isDev = import.meta.env.DEV;
-      if (isDev) {
-        // Enable debug token for local testing
-        // @ts-expect-error FIREBASE_APPCHECK_DEBUG_TOKEN is recognized by Firebase App Check SDK
-        self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-      }
-
-      if (firebaseConfig.appCheckSiteKey || isDev) {
-        try {
-          appCheck = initializeAppCheck(app, {
-            provider: new ReCaptchaV3Provider(firebaseConfig.appCheckSiteKey || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'),
-            isTokenAutoRefreshEnabled: true
-          });
-        } catch (e) {
-          console.warn('App Check initialization notice (non-fatal):', e);
-        }
+    // App Check initialization (only if an actual site key is configured)
+    if (
+      typeof window !== 'undefined' &&
+      app &&
+      firebaseConfig.appCheckSiteKey &&
+      firebaseConfig.appCheckSiteKey.trim().length > 0
+    ) {
+      try {
+        appCheck = initializeAppCheck(app, {
+          provider: new ReCaptchaV3Provider(firebaseConfig.appCheckSiteKey.trim()),
+          isTokenAutoRefreshEnabled: true,
+        });
+      } catch (e) {
+        console.warn('App Check initialization notice (non-fatal):', e);
       }
     }
 

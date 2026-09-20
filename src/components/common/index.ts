@@ -9,3 +9,4 @@ export * from './MiniScrollVisualizer';
 export * from './PageTransitionWrapper';
 export * from './NeuralNetworkBackground';
 export * from './DeleteAccountModal';
+export * from './ErrorBoundary';

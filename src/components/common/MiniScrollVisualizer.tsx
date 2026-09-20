@@ -233,7 +233,7 @@ export const MiniScrollVisualizer: React.FC = () => {
 
   return (
     <div
-      className={`fixed right-3 top-1/2 -translate-y-1/2 z-[99990] flex flex-col items-center gap-1.5 select-none transition-all duration-300 ${
+      className={`fixed right-3 top-1/2 -translate-y-1/2 z-[99990] hidden md:flex flex-col items-center gap-1.5 select-none transition-all duration-300 ${
         isScrollable
           ? isHovered || isDragging
             ? 'opacity-100 scale-100 pointer-events-auto'
