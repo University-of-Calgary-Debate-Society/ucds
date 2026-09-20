@@ -1706,3 +1706,38 @@
   pointer-events: none;
   white-space: nowrap;
 }
+
+/* ==========================================================================
+   Mobile Performance & Lightweight Animation Optimizations (<= 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Disable heavy infinite falling leaf shards that lag mobile compositor */
+  .chaotic-falling-leaves-stage {
+    display: none !important;
+  }
+
+  /* Disable continuous floating transform keyframes on mobile */
+  .float-gentle-1,
+  .float-gentle-2,
+  .float-gentle-3,
+  .float-gentle-4 {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  /* Disable heavy blur filter transitions on scroll */
+  .anim-focus-in {
+    filter: none !important;
+  }
+
+  /* Optimize history stream padding */
+  .history-canvas-stream {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .history-animated-title {
+    font-size: clamp(2.4rem, 9.5vw, 3.8rem) !important;
+  }
+}
+

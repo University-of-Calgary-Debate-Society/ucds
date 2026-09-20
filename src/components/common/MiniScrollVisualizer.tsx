@@ -2,25 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
-const getPageTitle = (pathname: string): string => {
-  const normalized = pathname.replace(/\/+$/, '') || '/';
-  if (normalized === '/' || normalized === '/home') return 'HOME';
-  if (normalized.startsWith('/connect/social')) return 'SOCIALS';
-  if (normalized.startsWith('/connect/contact')) return 'CONTACT';
-  if (normalized.startsWith('/member/portal')) return 'PORTAL';
-  if (normalized.startsWith('/member/login')) return 'LOGIN';
-  if (normalized.startsWith('/member/register')) return 'REGISTER';
-  if (normalized.startsWith('/member/unsubscribe')) return 'MAILING';
-  if (normalized.startsWith('/executive')) return 'EXECUTIVE';
-  if (normalized.startsWith('/about')) return 'ABOUT';
-  if (normalized.startsWith('/events')) return 'EVENTS';
-  if (normalized.startsWith('/communications')) return 'COMMS';
-  if (normalized.startsWith('/resources')) return 'RESOURCES';
-
-  const segment = normalized.split('/').filter(Boolean).pop() || 'UCDS';
-  return segment.toUpperCase().replace(/-/g, ' ');
-};
-
 export const MiniScrollVisualizer: React.FC = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isScrollable, setIsScrollable] = useState(false);
@@ -122,7 +103,6 @@ export const MiniScrollVisualizer: React.FC = () => {
   const thumbHeight = Math.max(TRACK_HEIGHT * viewportRatio, 24);
   const availableTravel = Math.max(TRACK_HEIGHT - thumbHeight, 1);
   const thumbTop = scrollProgress * availableTravel;
-  const pageTitle = getPageTitle(location.pathname);
 
   // Smooth click-to-jump on the background rail outside the thumb
   const handleTrackClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -245,19 +225,7 @@ export const MiniScrollVisualizer: React.FC = () => {
       role="region"
       aria-label="Mini Scroll Bar Visualizer"
     >
-      {/* Monochrome Vertical Characters from Top to Bottom */}
-      <div
-        className="flex flex-col items-center select-none pointer-events-none mb-1 text-[9px] font-sans font-black tracking-widest text-[#1C244C] dark:text-[#F6F6F6] drop-shadow-sm"
-        aria-hidden="true"
-      >
-        {pageTitle.split('').map((char, i) => (
-          <span key={i} className="leading-tight uppercase">
-            {char}
-          </span>
-        ))}
-      </div>
-
-      {/* Quick Jump to Top Icon Button (Black & White) */}
+      {/* Quick Jump to Top Button */}
       <button
         type="button"
         onClick={scrollToTop}
@@ -265,14 +233,14 @@ export const MiniScrollVisualizer: React.FC = () => {
         aria-label="Scroll to top"
         className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${
           isHovered || isDragging
-            ? 'opacity-100 scale-100 bg-white dark:bg-black text-black dark:text-white shadow-md hover:scale-110 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black border border-black/15 dark:border-white/20'
+            ? 'opacity-100 scale-100 bg-white dark:bg-[#15162C] text-[#0075A2] dark:text-[#53afd0] shadow-md hover:scale-110 hover:bg-[#0075A2] hover:text-white dark:hover:bg-[#53afd0] dark:hover:text-[#15162C] border border-[#0075A2]/25 dark:border-[#53afd0]/30'
             : 'opacity-0 scale-75 pointer-events-none'
         }`}
       >
         <ChevronUp className="w-3.5 h-3.5" />
       </button>
 
-      {/* Monochrome Mini Scrollbar Rail & Draggable Steady Thumb */}
+      {/* Mini Scrollbar Rail & Draggable Purely-Linear Thumb (OurStoryHistory Theme) */}
       <div className="relative flex items-center justify-center p-0.5">
         {/* Expanded Hit Box Rail */}
         <div
@@ -282,21 +250,25 @@ export const MiniScrollVisualizer: React.FC = () => {
           className="relative w-6 flex items-center justify-center cursor-pointer group"
           title="Drag or click to navigate page"
         >
-          {/* Visual Track (Sleek Glass Bar) */}
-          <div className="rounded-full w-2 h-full bg-black/25 dark:bg-white/25 border border-black/10 dark:border-white/15 backdrop-blur-md shadow-inner transition-colors duration-200 group-hover:bg-black/35 dark:group-hover:bg-white/35" />
+          {/* Visual Track (Slender Hairline Bar matching OurStoryHistory) */}
+          <div className="rounded-full w-2 h-full bg-[#1C244C]/14 dark:bg-[#53afd0]/18 border border-[#1C244C]/10 dark:border-[#53afd0]/20 backdrop-blur-md shadow-inner transition-colors duration-200 group-hover:bg-[#1C244C]/25 dark:group-hover:bg-[#53afd0]/30" />
 
-          {/* Draggable High-Contrast Black/White Thumb */}
+          {/* Draggable Luminous Gradient Thumb (Pure Linear Movement) */}
           <div
             onMouseDown={handleThumbMouseDown}
             onTouchStart={handleThumbTouchStart}
-            className={`absolute left-1/2 -translate-x-1/2 rounded-full shadow-md bg-black dark:bg-white transition-all duration-100 ${
+            className={`absolute left-1/2 -translate-x-1/2 rounded-full cursor-grab transition-[width,box-shadow] duration-150 ${
               isDragging
-                ? 'w-3.5 scale-105 cursor-grabbing ring-2 ring-black/20 dark:ring-white/30'
-                : 'w-2.5 hover:w-3.5 hover:scale-105 cursor-grab'
+                ? 'w-3.5 cursor-grabbing ring-2 ring-[#0075A2]/30 dark:ring-[#53afd0]/40'
+                : 'w-2.5 hover:w-3.5'
             }`}
             style={{
               top: `${thumbTop}px`,
               height: `${thumbHeight}px`,
+              background: 'linear-gradient(to bottom, #0075A2 0%, #53afd0 85%, #FFFFFF 100%)',
+              boxShadow: isDragging
+                ? '0 0 14px rgba(83, 175, 208, 0.95), 0 0 6px rgba(0, 117, 162, 0.8)'
+                : '0 0 10px rgba(83, 175, 208, 0.7)',
             }}
           >
             {/* Expanded invisible hit padding around thumb */}
@@ -305,7 +277,7 @@ export const MiniScrollVisualizer: React.FC = () => {
         </div>
       </div>
 
-      {/* Quick Jump to Bottom Icon Button (Black & White) */}
+      {/* Quick Jump to Bottom Button */}
       <button
         type="button"
         onClick={scrollToBottom}
@@ -313,7 +285,7 @@ export const MiniScrollVisualizer: React.FC = () => {
         aria-label="Scroll to bottom"
         className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${
           isHovered || isDragging
-            ? 'opacity-100 scale-100 bg-white dark:bg-black text-black dark:text-white shadow-md hover:scale-110 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black border border-black/15 dark:border-white/20'
+            ? 'opacity-100 scale-100 bg-white dark:bg-[#15162C] text-[#0075A2] dark:text-[#53afd0] shadow-md hover:scale-110 hover:bg-[#0075A2] hover:text-white dark:hover:bg-[#53afd0] dark:hover:text-[#15162C] border border-[#0075A2]/25 dark:border-[#53afd0]/30'
             : 'opacity-0 scale-75 pointer-events-none'
         }`}
       >

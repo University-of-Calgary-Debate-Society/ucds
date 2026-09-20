@@ -4,26 +4,36 @@
   width: 100%;
   position: relative;
   min-height: 100vh;
-  padding: 10.5rem 1.5rem 8rem; /* Generous top space between header and first card */
+  padding: 8.5rem 1.5rem 6rem; /* Comfortable space below fixed header */
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* Viewport-Pinned Background Video Container (Stationary relative to window) */
+/* Viewport-Pinned Background Video Container (Fixed full-viewport background) */
 .socials-video-wrapper {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
 }
 
 .socials-video-element {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
   width: 100%;
   height: 100%;
+  transform: translate(-50%, -50%);
   object-fit: cover;
 }
 
@@ -31,6 +41,8 @@
 .socials-video-overlay {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(246, 246, 246, 0.28); /* Highly visible video in light mode */
   backdrop-filter: blur(1px);
   -webkit-backdrop-filter: blur(1px);
@@ -54,13 +66,137 @@
   align-items: center;
 }
 
-/* Cards Stack: Centered & Extra Spaced Out */
+/* =========================================================================
+   Interactive Tab Selector (Social Media vs Other Links)
+   ========================================================================= */
+.socials-tabs-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(28, 36, 76, 0.18);
+  box-shadow: 0 8px 24px -4px rgba(28, 36, 76, 0.12);
+  margin-bottom: 2.5rem;
+  z-index: 20;
+}
+
+.dark .socials-tabs-container {
+  background: rgba(21, 22, 44, 0.9);
+  border-color: rgba(83, 175, 208, 0.3);
+  box-shadow: 0 8px 25px -4px rgba(0, 0, 0, 0.6);
+}
+
+.socials-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.4rem;
+  border-radius: 9999px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #1C244C;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.dark .socials-tab-btn {
+  color: #F6F6F6;
+}
+
+.socials-tab-btn.active {
+  background: #0075A2;
+  color: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(0, 117, 162, 0.35);
+}
+
+.dark .socials-tab-btn.active {
+  background: #53afd0;
+  color: #15162C;
+  box-shadow: 0 4px 18px rgba(83, 175, 208, 0.4);
+}
+
+.socials-tab-btn:hover:not(.active) {
+  background: rgba(0, 117, 162, 0.08);
+}
+
+.dark .socials-tab-btn:hover:not(.active) {
+  background: rgba(83, 175, 208, 0.12);
+}
+
+.tab-counter-pill {
+  font-size: 0.725rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.15);
+  color: inherit;
+}
+
+.dark .socials-tab-btn.active .tab-counter-pill {
+  background: rgba(21, 22, 44, 0.3);
+}
+
+/* Tab Panel Entrance Animations & Transitions */
+.tab-content-panel {
+  width: 100%;
+}
+
+.tab-content-enter {
+  animation: tabContentFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes tabContentFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.tab-empty-state-card {
+  animation: emptyStatePopIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform, opacity;
+}
+
+@keyframes emptyStatePopIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.94);
+  }
+  70% {
+    transform: translateY(-2px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.tab-empty-state-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 25px 60px -12px rgba(0, 117, 162, 0.25);
+}
+
+/* Cards Stack: Centered with 1/2 Spacing (Reduced from 5.5rem to 2.75rem) */
 .socials-grid-track {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5.5rem; /* Generous space between cards */
+  gap: 2.75rem; /* Exactly 1/2 of original 5.5rem spacing */
 }
 
 .social-row-centered {
@@ -150,12 +286,12 @@
 }
 
 .social-free-icon {
-  width: 5.2rem;
-  height: 5.2rem;
+  width: 6.4rem;
+  height: 6.4rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.22));
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.25));
   animation: socialIconFloat 3.8s ease-in-out infinite;
   will-change: transform;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
@@ -238,6 +374,47 @@
   color: #53afd0;
 }
 
+/* Linktree Deprecation Warning Label */
+.linktree-warning-banner {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.95rem;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1.5px solid rgba(245, 158, 11, 0.38);
+  border-radius: 14px;
+  font-size: 0.785rem;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.dark .linktree-warning-banner {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fde68a;
+}
+
+.linktree-badge-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.675rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(245, 158, 11, 0.16);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.dark .linktree-badge-mini {
+  color: #fde68a;
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
 /* Thick-Bordered Action Buttons with Light/Dark Centre */
 .btn-social-action {
   display: inline-flex;
@@ -286,30 +463,156 @@
   transform: translateY(0) scale(0.97);
 }
 
-/* Mobile Responsive Adjustments */
+/* =========================================================================
+   Mobile View Layouts (Icon-Only for Socials, Compact List for Other Links)
+   ========================================================================= */
+
+/* Mobile Social Media: Just Display Icons */
+.mobile-social-icons-wrapper {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  z-index: 10;
+  position: relative;
+}
+
+.mobile-social-icons-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem 0.75rem;
+  align-items: center;
+  justify-items: center;
+  padding: 1.5rem 1rem;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1.5px solid rgba(28, 36, 76, 0.15);
+  border-radius: 28px;
+  box-shadow: 0 16px 36px -8px rgba(28, 36, 76, 0.15);
+}
+
+.dark .mobile-social-icons-grid {
+  background: rgba(21, 22, 44, 0.9);
+  border-color: rgba(83, 175, 208, 0.28);
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.75);
+}
+
+.mobile-social-icon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobile-social-icon-item:hover,
+.mobile-social-icon-item:active {
+  transform: scale(1.1);
+}
+
+.mobile-icon-circle {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px solid rgba(28, 36, 76, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dark .mobile-icon-circle {
+  background: rgba(15, 18, 38, 0.95);
+  border-color: rgba(83, 175, 208, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-social-icon-item:hover .mobile-icon-circle {
+  border-color: #0075A2;
+  box-shadow: 0 6px 18px rgba(0, 117, 162, 0.28);
+}
+
+.dark .mobile-social-icon-item:hover .mobile-icon-circle {
+  border-color: #53afd0;
+  box-shadow: 0 6px 20px rgba(83, 175, 208, 0.35);
+}
+
+.mobile-icon-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.725rem;
+  font-weight: 700;
+  color: #1C244C;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.dark .mobile-icon-label {
+  color: #F6F6F6;
+}
+
+/* Mobile Other Links: Compact list of names with small gaps */
+.mobile-other-links-list {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem; /* Small gaps */
+}
+
+.mobile-other-link-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.1rem;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(28, 36, 76, 0.15);
+  border-radius: 18px;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(28, 36, 76, 0.05);
+  transition: all 0.2s ease;
+}
+
+.dark .mobile-other-link-item {
+  background: rgba(21, 22, 44, 0.88);
+  border-color: rgba(83, 175, 208, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.mobile-other-link-item:hover,
+.mobile-other-link-item:active {
+  transform: translateY(-2px);
+  border-color: #0075A2;
+  box-shadow: 0 6px 20px rgba(0, 117, 162, 0.2);
+}
+
+.dark .mobile-other-link-item:hover,
+.dark .mobile-other-link-item:active {
+  border-color: #53afd0;
+  box-shadow: 0 6px 22px rgba(83, 175, 208, 0.25);
+}
+
+.mobile-other-link-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1C244C;
+}
+
+.dark .mobile-other-link-name {
+  color: #F6F6F6;
+}
+
+/* General Screen Adjustments */
 @media (max-width: 640px) {
   .socials-page-container {
-    padding: 7rem 1rem 4rem;
-  }
-
-  .social-card {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 1.5rem 1.25rem;
-    gap: 1rem;
-    max-width: 100%;
-  }
-
-  .social-row-centered {
-    justify-content: center;
-  }
-
-  .social-card-body {
-    align-items: center;
-  }
-
-  .btn-social-action {
-    width: 100%;
+    padding: 6.5rem 1rem 4rem;
   }
 }

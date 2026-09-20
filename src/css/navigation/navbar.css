@@ -44,7 +44,7 @@
   pointer-events: auto;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   max-height: 85vh;
-  overflow: hidden;
+  overflow: visible;
   flex-shrink: 0;
 }
 
@@ -133,43 +133,85 @@
   }
 }
 
-/* Hover Tooltip Label */
+/* Fancy Hover Category Tooltip Capsule */
 .nav-tooltip {
   position: absolute;
   left: calc(100% + 14px);
   top: 50%;
-  transform: translateY(-50%) translateX(-8px);
-  padding: 0.45rem 0.9rem;
-  background: #1C244C;
+  transform: translateY(-50%) translateX(-10px) scale(0.88);
+  padding: 0.42rem 0.95rem;
+  background: rgba(28, 36, 76, 0.95);
   color: #F6F6F6;
-  font-family: 'Outfit', sans-serif;
-  font-size: 0.85rem;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.825rem;
   font-weight: 700;
-  border-radius: 8px;
+  letter-spacing: 0.035em;
+  border-radius: 9999px;
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 8px 25px -2px rgba(0, 0, 0, 0.5), 0 0 12px rgba(83, 175, 208, 0.35);
-  border: 1.5px solid rgba(83, 175, 208, 0.4);
-  z-index: 100;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(83, 175, 208, 0.6);
+  box-shadow: 0 10px 25px -3px rgba(28, 36, 76, 0.45), 0 0 16px 1px rgba(0, 117, 162, 0.35);
+  transition: opacity 0.2s ease, transform 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 80;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Triangle pointer notch pointing back to the hovered icon */
+.nav-tooltip::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-right: 6px solid rgba(83, 175, 208, 0.75);
+}
+
+.nav-tooltip::after {
+  content: '';
+  position: absolute;
+  right: calc(100% - 2px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-right: 5px solid rgba(28, 36, 76, 0.95);
 }
 
 .dark .nav-tooltip {
-  background: #15162C;
-  border: 1.5px solid rgba(83, 175, 208, 0.5);
-  box-shadow: 0 8px 25px -2px rgba(0, 0, 0, 0.8), 0 0 16px rgba(83, 175, 208, 0.45);
+  background: rgba(15, 18, 38, 0.96);
+  color: #FFFFFF;
+  border: 1.5px solid rgba(83, 175, 208, 0.75);
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.8), 0 0 18px 2px rgba(83, 175, 208, 0.45);
 }
 
+.dark .nav-tooltip::after {
+  border-right-color: rgba(15, 18, 38, 0.96);
+}
+
+/* Spring pop on active hover */
 .nav-item-btn:hover .nav-tooltip {
   opacity: 1;
-  transform: translateY(-50%) translateX(0);
+  transform: translateY(-50%) translateX(0) scale(1);
 }
 
-/* Subcategories Drawer (Opening to the right) */
+/* Hide tooltip when the category drawer is open */
+.nav-item-btn.active .nav-tooltip {
+  display: none !important;
+}
+
+/* Subcategories Drawer (Opening to the right, prominently above hover tooltips) */
 .subcategories-drawer {
   position: relative;
-  z-index: 60;
+  z-index: 120;
   pointer-events: auto;
   min-width: 250px;
   max-width: 300px;
@@ -319,9 +361,9 @@
     position: fixed;
     inset: 0;
     z-index: 52;
-    background: rgba(16, 20, 38, 0.5);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background: rgba(10, 14, 30, 0.8);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
     animation: navBackdropFadeIn 0.2s ease-out;
   }
 
@@ -344,10 +386,38 @@
   }
 
   .floating-nav-container:hover,
-  .floating-nav-container:focus-within,
-  .floating-nav-container.has-active-menu {
+  .floating-nav-container:focus-within {
     transform: translateX(-50%) scale(1);
     opacity: 1;
+  }
+
+  /* When menu is active, dock firmly to bottom with zero peek-through underneath the bar */
+  .floating-nav-container.has-active-menu {
+    bottom: 0 !important;
+    padding-bottom: max(0.65rem, env(safe-area-inset-bottom, 0.65rem)) !important;
+    transform: translateX(-50%) scale(1) !important;
+    opacity: 1;
+  }
+
+  .floating-nav-container.has-active-menu::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -50vw;
+    right: -50vw;
+    height: calc(100% + 2rem);
+    background: rgba(246, 246, 246, 0.85);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    z-index: -1;
+    pointer-events: none;
+    border-top: 1.5px solid rgba(28, 36, 76, 0.15);
+    border-radius: 28px 28px 0 0;
+  }
+
+  .dark .floating-nav-container.has-active-menu::after {
+    background: rgba(15, 18, 38, 0.92);
+    border-top: 1.5px solid rgba(83, 175, 208, 0.3);
   }
 
   .reduce-motion .floating-nav-container,

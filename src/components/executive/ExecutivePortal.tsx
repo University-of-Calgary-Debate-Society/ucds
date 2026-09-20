@@ -5,6 +5,7 @@ import {
   Mail,
   FileText,
   Building2,
+  Share2,
   ArrowRight,
   TrendingUp,
   CheckCircle2,
@@ -72,6 +73,14 @@ export const ExecutivePortal: React.FC = () => {
       href: '/executive/organizations',
       icon: Building2,
       badge: 'Global Registry',
+    },
+    {
+      id: 'socials',
+      title: 'Social Media & Links',
+      desc: 'Configure official society social profiles, Discord channels, linktree deprecation, and resource bookmarks.',
+      href: '/executive/socials',
+      icon: Share2,
+      badge: 'Public Links',
     },
   ];
 

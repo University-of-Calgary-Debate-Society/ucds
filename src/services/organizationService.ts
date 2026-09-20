@@ -10,6 +10,12 @@ import { db } from '@/lib/firebase';
 import { clientCache } from '@/utils/clientCache';
 
 export const ORGS_CACHE_KEY = 'all_organizations';
+export interface OtherLinkItem {
+  name: string;
+  link: string;
+  description: string;
+}
+
 export interface OrganizationDoc {
   id: string;
   name: string;
@@ -31,6 +37,7 @@ export interface OrganizationDoc {
   formats?: string[];
   isOnline?: boolean;
   links?: Record<string, string>;
+  'links-other'?: Record<string, OtherLinkItem>;
   executives?: Record<string, { 'name-first'?: string; 'name-last'?: string; name?: string; email?: string }>;
   'time-created'?: unknown;
   'time-updated'?: unknown;
@@ -108,6 +115,27 @@ export function normalizeOrgDoc(id: string, raw: Record<string, unknown>): Organ
     }
   }
 
+  // Normalize links-other nested map (keys "0", "1", ... with name, link, description)
+  let linksOther: Record<string, OtherLinkItem> | undefined = undefined;
+  const rawLinksOther = raw['links-other'] || raw.linksOther;
+  if (typeof rawLinksOther === 'object' && rawLinksOther !== null && !Array.isArray(rawLinksOther)) {
+    const otherEntries: [string, OtherLinkItem][] = [];
+    Object.entries(rawLinksOther as Record<string, unknown>).forEach(([k, v]) => {
+      if (typeof v === 'object' && v !== null) {
+        const item = v as Record<string, unknown>;
+        const name = typeof item.name === 'string' ? item.name.trim() : '';
+        const link = typeof item.link === 'string' ? item.link.trim() : '';
+        const description = typeof item.description === 'string' ? item.description.trim() : '';
+        if (name || link) {
+          otherEntries.push([k.trim(), { name, link, description }]);
+        }
+      }
+    });
+    if (otherEntries.length > 0) {
+      linksOther = Object.fromEntries(otherEntries);
+    }
+  }
+
   // Normalize executives map
   let executives: OrganizationDoc['executives'] = undefined;
   if (typeof raw.executives === 'object' && raw.executives !== null && !Array.isArray(raw.executives)) {
@@ -156,6 +184,7 @@ export function normalizeOrgDoc(id: string, raw: Record<string, unknown>): Organ
     'email-finance': emailFinanceVal,
     type: type.length > 0 ? type : undefined,
     links,
+    'links-other': linksOther,
     executives,
     'time-created': raw['time-created'] || raw.timeCreated,
     'time-updated': raw['time-updated'] || raw.timeUpdated,
@@ -338,6 +367,7 @@ export async function saveOrganization(
     'email-finance': (orgData['email-finance'] || orgData.email)?.trim() || undefined,
     type: (orgData.type || []).map((t) => t.trim()).filter(Boolean),
     links: orgData.links && Object.keys(orgData.links).length > 0 ? orgData.links : undefined,
+    'links-other': orgData['links-other'] && Object.keys(orgData['links-other']).length > 0 ? orgData['links-other'] : undefined,
     executives: orgData.executives && Object.keys(orgData.executives).length > 0 ? orgData.executives : undefined,
     'time-updated': serverTimestamp(),
   };
@@ -392,3 +422,52 @@ export async function deleteOrganization(docId: string): Promise<void> {
   // Optimistically remove from local client cache
   clientCache.removeCollectionItem(ORGS_CACHE_KEY, docId);
 }
+
+/**
+ * Specifically updates social links and other links for UCDS in Firestore Organizations.
+ * Document: university-of-calgary-debate-society
+ */
+export async function updateUcdsSocialLinks(
+  links: Record<string, string>,
+  linksOther: Record<string, OtherLinkItem>
+): Promise<void> {
+  if (!db) throw new Error('Firebase Firestore is not initialized.');
+
+  const docRef = doc(db, 'Organizations', 'university-of-calgary-debate-society');
+
+  // Clean social links: trim and remove empty
+  const cleanLinks: Record<string, string> = {};
+  Object.entries(links).forEach(([k, v]) => {
+    const cleanK = k.trim().toLowerCase();
+    const cleanV = typeof v === 'string' ? v.trim() : '';
+    if (cleanK && cleanV) {
+      cleanLinks[cleanK] = cleanV;
+    }
+  });
+
+  // Clean links-other: index numerically "0", "1", "2"
+  const cleanOther: Record<string, OtherLinkItem> = {};
+  let idx = 0;
+  Object.values(linksOther).forEach((item) => {
+    const name = typeof item.name === 'string' ? item.name.trim() : '';
+    const link = typeof item.link === 'string' ? item.link.trim() : '';
+    const description = typeof item.description === 'string' ? item.description.trim() : '';
+    if (name || link) {
+      cleanOther[String(idx)] = { name, link, description };
+      idx++;
+    }
+  });
+
+  const payload: Record<string, unknown> = {
+    links: cleanLinks,
+    'links-other': cleanOther,
+    'time-updated': serverTimestamp(),
+  };
+
+  await setDoc(docRef, payload, { merge: true });
+
+  // Invalidate and update local cache for UCDS
+  clientCache.invalidate('org_ucds');
+  clientCache.invalidate(ORGS_CACHE_KEY);
+}
+

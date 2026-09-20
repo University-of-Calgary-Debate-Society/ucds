@@ -803,22 +803,30 @@ body:has(.home-hero-container) {
   }
 
   .hero-title-part2 {
-    font-size: clamp(2.1rem, 9.2vw, 3.4rem);
+    font-size: clamp(2.75rem, 11vw, 4.2rem) !important;
+    line-height: 1.05 !important;
   }
 
-  /* Button stacking for small touch screens */
+  /* Single-row side-by-side action buttons for touch screens */
   .hero-buttons-group {
-    flex-direction: column;
-    width: 100%;
-    gap: 0.85rem;
-    margin-top: 1.75rem;
+    flex-direction: row !important;
+    width: 100% !important;
+    max-width: 340px !important;
+    gap: 0.6rem !important;
+    margin-top: 1.25rem !important;
+    justify-content: center !important;
   }
 
   .btn-join-primary,
   .btn-about-secondary,
   .btn-hero-secondary {
-    width: 100%;
-    max-width: 320px;
-    justify-content: center;
+    width: auto !important;
+    flex: 1 1 0% !important;
+    padding: 0.55rem 0.85rem !important;
+    font-size: 0.85rem !important;
+    min-height: 40px !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
   }
 }

@@ -20,6 +20,7 @@ import { ExecutiveFinance } from '@/components/executive/ExecutiveFinance';
 import { ExecutiveMembers } from '@/components/executive/ExecutiveMembers';
 import { ExecutivePosts } from '@/components/executive/ExecutivePosts';
 import { ExecutiveOrganizations } from '@/components/executive/ExecutiveOrganizations';
+import { ExecutiveSocials } from '@/components/executive/ExecutiveSocials';
 import { OurStoryHistory } from '@/components/about/OurStoryHistory';
 import { updateSeasonalSeoTags } from '@/utils/seasonalLogo';
 
@@ -76,6 +77,8 @@ export const App: React.FC = () => {
             <Route path="/executive/members" element={<ExecutiveMembers />} />
             <Route path="/executive/posts" element={<ExecutivePosts />} />
             <Route path="/executive/organizations" element={<ExecutiveOrganizations />} />
+            <Route path="/executive/socials" element={<ExecutiveSocials />} />
+            <Route path="/executive/social-media" element={<ExecutiveSocials />} />
 
             {/* Fallback to Home */}
             <Route path="*" element={<Navigate to="/" replace />} />

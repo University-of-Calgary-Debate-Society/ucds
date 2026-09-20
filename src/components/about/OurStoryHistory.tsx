@@ -536,28 +536,8 @@ export const OurStoryHistory: React.FC = () => {
           <div className="scene-flare-cyan" />
         </div>
 
-        {/* Scene 6: Titans (Danielle Smith & Naheed Nenshi - Only active on Titans section) */}
+        {/* Scene 6: Titans (Blank background with ambient flares) */}
         <div className={`backdrop-scene-layer ${activeEra === 'titans' ? 'is-active' : ''}`}>
-          <div className="absolute inset-0 grid grid-cols-2 opacity-65 dark:opacity-65">
-            <div className="relative w-full h-full overflow-hidden">
-              <DriveImage
-                fileId={DRIVE_IMAGES.danielleSmith}
-                alt=""
-                className="backdrop-img-full object-top"
-                wrapperClassName="w-full h-full"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/30 to-transparent" />
-            </div>
-            <div className="relative w-full h-full overflow-hidden">
-              <DriveImage
-                fileId={DRIVE_IMAGES.naheedNenshi}
-                alt=""
-                className="backdrop-img-full object-top"
-                wrapperClassName="w-full h-full"
-              />
-              <div className="absolute inset-0 bg-gradient-to-l from-[#0075A2]/40 to-transparent" />
-            </div>
-          </div>
           <div className="scene-flare-amber" />
           <div className="scene-flare-cyan" />
         </div>
@@ -1173,7 +1153,7 @@ export const OurStoryHistory: React.FC = () => {
                   rel="noopener noreferrer"
                   className="underline decoration-wavy decoration-amber-300/70 underline-offset-4 hover:decoration-amber-300"
                 >
-                  Terrence Tao said it best
+                  Po-Shen Loh said it best
                 </a>
               </p>
             </div>
@@ -1315,8 +1295,8 @@ export const OurStoryHistory: React.FC = () => {
         <section className="chaotic-world-stage anim-scale-up">
           <div className="chaotic-grid-distortion" aria-hidden="true" />
 
-          {/* Falling Leaves Issues Layer in Background */}
-          <div className="chaotic-falling-leaves-stage" aria-hidden="true">
+          {/* Falling Leaves Issues Layer in Background (Desktop Only to Avoid Mobile CPU/GPU Lag) */}
+          <div className="chaotic-falling-leaves-stage hidden md:block" aria-hidden="true">
             {FALLING_ISSUES.map((issue) => (
               <div
                 key={issue.text}
@@ -1330,6 +1310,19 @@ export const OurStoryHistory: React.FC = () => {
                 <issue.icon className="w-3.5 h-3.5" />
                 <span>{issue.text}</span>
               </div>
+            ))}
+          </div>
+
+          {/* Clean, Non-Laggy Static Issue Badges for Mobile */}
+          <div className="md:hidden flex flex-wrap gap-2 justify-center py-3 px-3 max-w-lg mx-auto relative z-10" aria-hidden="true">
+            {FALLING_ISSUES.slice(0, 8).map((issue) => (
+              <span
+                key={issue.text}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-900/80 border border-slate-700/60 text-slate-300"
+              >
+                <issue.icon className="w-3 h-3 text-[#53afd0]" />
+                {issue.text}
+              </span>
             ))}
           </div>
 
@@ -1351,20 +1344,16 @@ export const OurStoryHistory: React.FC = () => {
         </section>
 
         {/* ================================================================= */}
-        {/* INSPIRATIONAL CALL-TO-ACTION: THE WORLD NEEDS YOU MORE THAN EVER */}
+        {/* INSPIRATIONAL CALL-TO-ACTION */}
         {/* ================================================================= */}
         <section className="history-cta-arena anim-scale-up">
           <div className="cta-pulse-halo" aria-hidden="true" />
           <div className="max-w-3xl mx-auto space-y-6 relative z-10">
-            <div className="cta-needs-you-badge">
-              <Sparkles className="w-4 h-4 text-cyan-300 animate-spin-subtle" />
-              <span>The world needs you more than ever.</span>
-            </div>
             <h2 className="text-3xl sm:text-5xl md:text-6xl font-black font-title text-white">
-              Claim Your Seat at the Table
+              Join the Debate Society!
             </h2>
-            <p className="text-base sm:text-lg text-white/90 leading-relaxed font-normal max-w-2xl mx-auto">
-              You walk the exact same lecture halls. You study in the exact same campus spaces. The ability to articulate your convictions, dissect complex arguments, and command any room is not born—it is trained.
+            <p className="text-base sm:text-xl text-white/90 leading-relaxed font-medium max-w-2xl mx-auto">
+              We walk the same halls, love curiosity, and value development. Take the first step in developing your intellectual and communication skills.
             </p>
             <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
               <button
@@ -1372,7 +1361,7 @@ export const OurStoryHistory: React.FC = () => {
                 onClick={() => smoothNavigate('/member/register')}
                 className="btn-cta-primary group"
               >
-                <span>Join the Debate Society</span>
+                <span>Join</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
               </button>
             </div>

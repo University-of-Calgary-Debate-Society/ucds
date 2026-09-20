@@ -497,3 +497,19 @@ body {
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
 }
+
+/* =========================================================================
+   Universal Deep Modal Backdrop Blurring
+   Ensures popups/dialogs fully blur background page content across all views
+   ========================================================================= */
+.modal-org-overlay,
+.settings-modal-backdrop,
+div[role="dialog"],
+.modal-backdrop,
+[data-modal-backdrop="true"],
+.fixed.inset-0.z-\[9999\],
+.fixed.inset-0.z-\[10000\],
+.fixed.inset-0.z-\[999\] {
+  backdrop-filter: blur(24px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+}

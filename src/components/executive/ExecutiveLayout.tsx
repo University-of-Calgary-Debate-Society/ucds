@@ -8,6 +8,7 @@ import {
   Users,
   FileText,
   Building2,
+  Share2,
   LayoutDashboard,
   ArrowLeft,
   Settings,
@@ -26,13 +27,14 @@ import { LoadingScreen } from '@/components/common';
 
 interface ExecutiveLayoutProps {
   children: React.ReactNode;
-  activeSection?: 'overview' | 'mail' | 'events' | 'finance' | 'members' | 'posts' | 'organizations';
+  activeSection?: 'overview' | 'mail' | 'events' | 'finance' | 'members' | 'posts' | 'organizations' | 'socials';
 }
 
 const EXEC_SECTIONS = [
   { id: 'overview', name: 'Overview', href: '/executive/portal', icon: LayoutDashboard },
   { id: 'members', name: 'Members & Roster', href: '/executive/members', icon: Users },
   { id: 'organizations', name: 'Organizations', href: '/executive/organizations', icon: Building2 },
+  { id: 'socials', name: 'Social Media', href: '/executive/socials', icon: Share2 },
   { id: 'events', name: 'Events', href: '/executive/events', icon: Calendar },
   { id: 'finance', name: 'Finance', href: '/executive/finance', icon: DollarSign },
   { id: 'mail', name: 'Communications', href: '/executive/mail', icon: Mail },
@@ -48,6 +50,9 @@ export const ExecutiveLayout: React.FC<ExecutiveLayoutProps> = ({ children, acti
   // Collapsible Sidebar State (persisted in localStorage)
   const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
     try {
+      if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+        return true;
+      }
       return localStorage.getItem('ucds_exec_sidebar_collapsed') === 'true';
     } catch {
       return false;
@@ -73,15 +78,17 @@ export const ExecutiveLayout: React.FC<ExecutiveLayoutProps> = ({ children, acti
       ? 'members'
       : location.pathname.includes('/organizations')
         ? 'organizations'
-        : location.pathname.includes('/events')
-          ? 'events'
-          : location.pathname.includes('/finance')
-            ? 'finance'
-            : location.pathname.includes('/mail')
-              ? 'mail'
-              : location.pathname.includes('/posts')
-                ? 'posts'
-                : 'overview');
+        : location.pathname.includes('/socials') || location.pathname.includes('/social-media')
+          ? 'socials'
+          : location.pathname.includes('/events')
+            ? 'events'
+            : location.pathname.includes('/finance')
+              ? 'finance'
+              : location.pathname.includes('/mail')
+                ? 'mail'
+                : location.pathname.includes('/posts')
+                  ? 'posts'
+                  : 'overview');
 
   // Loading state
   if (authLoading) {
@@ -257,7 +264,7 @@ export const ExecutiveLayout: React.FC<ExecutiveLayoutProps> = ({ children, acti
         </aside>
 
         {/* Main Section Content */}
-        <main className="executive-main-content">
+        <main className={`executive-main-content ${isCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
           <div key={location.pathname} className="animate-pageEnter w-full">
             {children}
           </div>
